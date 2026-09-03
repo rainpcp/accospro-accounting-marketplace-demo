@@ -32,10 +32,10 @@ export default function Login() {
         <Field label="รหัสผ่าน">
           <PasswordField value={password} onChange={setPassword} onEnter={submit} />
         </Field>
-        <button onClick={submit} className="w-full rounded-xl bg-indigo-600 px-4 py-3 font-semibold text-white hover:bg-indigo-700">
+        <button onClick={submit} className="w-full rounded-xl bg-primary-600 px-4 py-3 font-semibold text-white hover:bg-primary-700">
           เข้าสู่ระบบ
         </button>
-        <p className="text-center text-sm text-slate-500">ยังไม่มีบัญชี? <Link to="/register" className="font-semibold text-indigo-600">สมัครฟรี</Link></p>
+        <p className="text-center text-sm text-slate-500">ยังไม่มีบัญชี? <Link to="/register" className="font-semibold text-primary-600">สมัครฟรี</Link></p>
       </div>
     </div>
   );

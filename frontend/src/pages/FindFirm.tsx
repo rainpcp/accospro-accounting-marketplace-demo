@@ -65,7 +65,7 @@ export default function FindFirm() {
             <option value={4.5}>★ 4.5+</option>
             <option value={4.8}>★ 4.8+</option>
           </select>
-          <button onClick={load} className="rounded-xl bg-indigo-600 px-6 py-2.5 font-semibold text-white hover:bg-indigo-700">
+          <button onClick={load} className="rounded-xl bg-primary-600 px-6 py-2.5 font-semibold text-white hover:bg-primary-700">
             ค้นหา
           </button>
         </div>
@@ -99,7 +99,7 @@ export default function FindFirm() {
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
           {data.map((f) => (
-            <article key={f.id} className="rounded-2xl border bg-white p-5 transition hover:border-indigo-200 hover:shadow-md">
+            <article key={f.id} className="rounded-2xl border bg-white p-5 transition hover:border-primary-200 hover:shadow-md">
               <div className="flex items-start justify-between gap-2">
                 <h2 className="font-bold">{f.name}</h2>
                 <Rating value={f.rating} count={f.review_count} />

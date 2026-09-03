@@ -14,7 +14,7 @@ function PickCard({ job, jobType }: { job: Job; jobType: "sme" | "firm" }) {
   return (
     <article className="flex min-w-[270px] flex-1 flex-col rounded-2xl border bg-white p-5 snap-start">
       <div className="flex items-center gap-2 text-sm">
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-indigo-100 font-bold text-indigo-700" aria-hidden>
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary-100 font-bold text-primary-700" aria-hidden>
           {who[0]}
         </span>
         <span className="font-medium">{who}{job.province ? ` · ${job.province}` : ""}</span>
@@ -22,7 +22,7 @@ function PickCard({ job, jobType }: { job: Job; jobType: "sme" | "firm" }) {
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden />เปิดรับงาน
         </span>
       </div>
-      <Link to={`/jobs/${jobType}/${job.id}`} className="mt-3 line-clamp-2 font-bold hover:text-indigo-700">
+      <Link to={`/jobs/${jobType}/${job.id}`} className="mt-3 line-clamp-2 font-bold hover:text-primary-700">
         {job.title}
       </Link>
       <div className="mt-2 flex flex-wrap gap-1.5">
@@ -80,8 +80,8 @@ export default function Jobboard() {
       {/* picks */}
       <section>
         <div className="flex flex-wrap items-center gap-3">
-          <p className="font-bold text-indigo-700">✓ AccOS Pro picks</p>
-          <Link to="/post-job" className="rounded-full border bg-white px-4 py-1.5 text-sm font-medium hover:border-indigo-300">
+          <p className="font-bold text-primary-700">✓ AccOS Pro picks</p>
+          <Link to="/post-job" className="rounded-full border bg-white px-4 py-1.5 text-sm font-medium hover:border-primary-300">
             + ลงประกาศงาน
           </Link>
         </div>
@@ -154,7 +154,7 @@ export default function Jobboard() {
                   {rows.map((j) => (
                     <tr key={j.id} className="border-b last:border-0 hover:bg-slate-50">
                       <td className="py-3 pr-4">
-                        <Link to={`/jobs/${tab}/${j.id}`} className="flex items-center gap-3 font-medium hover:text-indigo-700">
+                        <Link to={`/jobs/${tab}/${j.id}`} className="flex items-center gap-3 font-medium hover:text-primary-700">
                           {j.cover
                             ? <img src={j.cover} alt="" loading="lazy" className="h-10 w-10 shrink-0 rounded-lg border object-cover" />
                             : <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-400" aria-hidden>🗎</span>}
@@ -163,7 +163,7 @@ export default function Jobboard() {
                       </td>
                       <td className="py-3 pr-4 text-slate-600">{j.category}</td>
                       <td className="py-3 pr-4"><Chip>{tab === "sme" ? "SME จ้าง" : "บริษัทจ้าง"}</Chip></td>
-                      <td className="py-3 pr-4 font-semibold text-indigo-700">{baht(j.budget)}</td>
+                      <td className="py-3 pr-4 font-semibold text-primary-700">{baht(j.budget)}</td>
                       <td className="py-3 pr-4 text-slate-600">{j.proposals ?? 0}</td>
                       <td className="whitespace-nowrap py-3 pr-4 text-slate-500">{fmtDateTime(j.created_at)}</td>
                     </tr>
@@ -174,9 +174,9 @@ export default function Jobboard() {
             {/* mobile cards */}
             <div className="mt-4 grid gap-2 md:hidden">
               {rows.map((j) => (
-                <Link key={j.id} to={`/jobs/${tab}/${j.id}`} className="rounded-xl border p-4 hover:border-indigo-200">
+                <Link key={j.id} to={`/jobs/${tab}/${j.id}`} className="rounded-xl border p-4 hover:border-primary-200">
                   <p className="font-medium">{j.title}</p>
-                  <p className="mt-1 text-sm text-slate-500">{j.category} · <span className="font-semibold text-indigo-700">{baht(j.budget)}</span> · เสนอแล้ว {j.proposals ?? 0} · {fmtDateTime(j.created_at)}</p>
+                  <p className="mt-1 text-sm text-slate-500">{j.category} · <span className="font-semibold text-primary-700">{baht(j.budget)}</span> · เสนอแล้ว {j.proposals ?? 0} · {fmtDateTime(j.created_at)}</p>
                 </Link>
               ))}
             </div>

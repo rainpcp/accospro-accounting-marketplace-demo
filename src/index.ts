@@ -4,6 +4,7 @@ import { cors } from "hono/cors";
 type Env = {
   DB?: D1Database;
   DOCS?: R2Bucket;
+  ASSETS?: Fetcher;
 };
 
 const app = new Hono<{ Bindings: Env }>();
@@ -368,6 +369,29 @@ app.get("/api/images", async (c) => {
   } catch {
     return c.json({ data: [], mock: true });
   }
+});
+
+// ---------- SPA fallback: BrowserRouter direct-load/refresh (/find-talent, /find-firm, ...) ----------
+// Cloudflare [assets] not_found_handling=single-page-application ควรเสิร์ฟ index.html ให้เองอยู่แล้ว
+// แต่กันเหนียว: ถ้า request หลุดมาถึง Worker (no asset match) ให้เสิร์ฟ index.html เอง
+// เพื่อให้ React Router ฝั่ง client รับช่วงต่อ — แทน Hono 404 เปล่าๆ
+app.notFound(async (c) => {
+  const url = new URL(c.req.url);
+  // API ที่ไม่รู้จักคงเป็น JSON 404 เหมือนเดิม
+  if (url.pathname.startsWith("/api/")) return c.json({ error: "not found" }, 404);
+  try {
+    if (c.env.ASSETS) {
+      const res = await c.env.ASSETS.fetch(new Request(new URL("/index.html", url.origin)));
+      if (res && (res.ok || res.status === 200)) {
+        const headers = new Headers(res.headers);
+        headers.set("Content-Type", "text/html; charset=utf-8");
+        headers.set("Cache-Control", "no-cache");
+        return new Response(res.body, { status: 200, headers });
+      }
+    }
+  } catch { /* fall through */ }
+  // ไม่มี ASSETS binding (เช่น wrangler dev เก่า) — ส่ง link กลับหน้าแรก
+  return c.html(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>AccOS Pro Marketplace</title></head><body style="font-family:system-ui"><p>ไม่พบหน้านี้ — <a href="/">กลับหน้าแรก AccOS Pro Marketplace</a></p></body></html>`, 200);
 });
 
 export default app;

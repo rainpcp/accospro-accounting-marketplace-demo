@@ -31,7 +31,7 @@ export default function PostJob() {
         <h1 className="text-xl font-bold">โพสต์งานต้องเข้าสู่ระบบก่อน</h1>
         <p className="mt-2 text-sm text-slate-500">สมัครฟรี 30 วินาที เลือกบทบาท SME / สำนักงานบัญชี / ฟรีแลนซ์</p>
         <div className="mt-4 flex justify-center gap-2">
-          <Link to="/login" className="rounded-xl bg-indigo-600 px-4 py-2 font-semibold text-white">เข้าสู่ระบบ</Link>
+          <Link to="/login" className="rounded-xl bg-primary-600 px-4 py-2 font-semibold text-white">เข้าสู่ระบบ</Link>
           <Link to="/register" className="rounded-xl border px-4 py-2 font-semibold">สมัครฟรี</Link>
         </div>
       </div>
@@ -66,7 +66,7 @@ export default function PostJob() {
       </div>
       <div className="flex gap-2" role="group" aria-label="ประเภทงาน">
         <button onClick={() => setKind("sme")} aria-pressed={kind === "sme"}
-          className={`flex-1 rounded-xl px-4 py-2.5 font-semibold ${kind === "sme" ? "bg-indigo-600 text-white" : "border bg-white"}`}>
+          className={`flex-1 rounded-xl px-4 py-2.5 font-semibold ${kind === "sme" ? "bg-primary-600 text-white" : "border bg-white"}`}>
           A · SME หา firm
         </button>
         <button onClick={() => setKind("firm")} aria-pressed={kind === "firm"}
@@ -98,7 +98,7 @@ export default function PostJob() {
           <textarea value={form.detail} onChange={(e) => setForm({ ...form, detail: e.target.value })} rows={4}
             placeholder="จำนวนบิล โปรแกรมที่ใช้ กำหนดส่ง" className={inputCls} />
         </Field>
-        <button onClick={submit} className="w-full rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white hover:bg-indigo-700 sm:w-auto">
+        <button onClick={submit} className="w-full rounded-xl bg-primary-600 px-5 py-3 font-semibold text-white hover:bg-primary-700 sm:w-auto">
           โพสต์งานเลย
         </button>
         {msg && <p className="text-sm text-rose-600" role="alert">{msg}</p>}

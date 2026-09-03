@@ -22,7 +22,7 @@ export function VerifiedBadge({ label }: { label: string }) {
 
 export function AccosBadge() {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 ring-1 ring-indigo-200">
+    <span className="inline-flex items-center gap-1 rounded-full bg-primary-50 px-2 py-0.5 text-xs font-medium text-primary-700 ring-1 ring-primary-200">
       ใช้ AccOS Pro
     </span>
   );
@@ -31,7 +31,7 @@ export function AccosBadge() {
 /* ---------- category / skill chip ---------- */
 export function Chip({ children, tone = "slate" }: { children: ReactNode; tone?: "slate" | "brand" }) {
   const cls = tone === "brand"
-    ? "bg-indigo-50 text-indigo-700 ring-indigo-100"
+    ? "bg-primary-50 text-primary-700 ring-primary-100"
     : "bg-slate-100 text-slate-600 ring-slate-200/60";
   return <span className={`rounded-full px-2.5 py-0.5 text-xs ring-1 ${cls}`}>{children}</span>;
 }

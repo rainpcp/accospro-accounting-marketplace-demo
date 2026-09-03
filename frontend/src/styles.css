@@ -1,11 +1,36 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "IBM Plex Sans Thai", "IBM Plex Sans", "Noto Sans Thai", system-ui, sans-serif;
-  --color-brand-50: #eef2ff;
-  --color-brand-100: #e0e7ff;
-  --color-brand-600: #4f46e5;
-  --color-brand-700: #4338ca;
+  --font-sans: "Plus Jakarta Sans", "Inter", "IBM Plex Sans Thai", "Noto Sans Thai", system-ui, sans-serif;
+
+  /* AirLume core palette */
+  --color-navy-950: #060a2e;
+  --color-navy-900: #0e1445;
+  --color-navy-800: #1e2a8a;
+  --color-primary-50: #f2f4ff;
+  --color-primary-100: #e8ebff;
+  --color-primary-200: #c9d1ff;
+  --color-primary-300: #a5b4ff;
+  --color-primary-400: #7d8bff;
+  --color-primary-500: #4f63ff;
+  --color-primary-600: #3347ff;
+  --color-primary-700: #2a3ad9;
+  --color-light: #f6f7fb;
+  --color-ink: #12163a;
+  --color-muted: #6b7194;
+  --color-accent-sky: #7bcbff;
+
+  /* AirLume radius (cards ≥20px, buttons pill only) */
+  --radius-card: 20px;
+  --radius-card-lg: 28px;
+  --radius-pill: 999px;
+  --radius-img: 16px;
+
+  /* AirLume shadows */
+  --shadow-card: 0 20px 60px rgba(6, 10, 46, 0.25);
+  --shadow-soft: 0 4px 20px rgba(18, 22, 58, 0.06);
+  --shadow-cta: 0 8px 24px rgba(51, 71, 255, 0.45);
+  --shadow-glow: 0 0 40px rgba(79, 99, 255, 0.5);
 }
 
 html {
@@ -17,6 +42,8 @@ body {
   /* Thai tone marks need vertical headroom — never go below 1.55 */
   line-height: 1.7;
   text-rendering: optimizeLegibility;
+  background: var(--color-light);
+  color: var(--color-ink);
 }
 
 h1, h2, h3 {
@@ -24,11 +51,91 @@ h1, h2, h3 {
   letter-spacing: 0;
 }
 
-/* Visible keyboard focus (a11y) */
+/* Visible keyboard focus (sky ring on dark, brand on light) */
 :where(a, button, input, select, textarea):focus-visible {
-  outline: 2px solid var(--color-brand-600);
+  outline: 2px solid var(--color-primary-500);
   outline-offset: 2px;
   border-radius: 6px;
+}
+.hero-dark :where(a, button):focus-visible {
+  outline-color: var(--color-accent-sky);
+}
+
+/* ---------- AirLume hero ---------- */
+.hero-bg {
+  background: radial-gradient(1200px 600px at 50% -10%, #1e2a8a 0%, #0a0f4a 35%, #060a2e 100%);
+}
+.hero-pillars {
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0 110px,
+    rgba(123, 203, 255, 0.07) 110px 111px,
+    transparent 111px 220px
+  );
+  mask-image: linear-gradient(180deg, transparent 0%, black 30%, black 70%, transparent 100%);
+}
+
+/* ---------- AirLume primary CTA pill + circle arrow ---------- */
+.cta-airlume {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  padding-left: 24px;
+  padding-right: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #3347ff 0%, #5b6cff 100%);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 8px 24px rgba(51, 71, 255, 0.45);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.cta-airlume:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(51, 71, 255, 0.55);
+}
+.cta-airlume .cta-arrow {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: #fff;
+  color: #3347ff;
+  font-weight: 700;
+}
+
+/* ---------- AirLume glass deal card ---------- */
+.glass-dark {
+  background: linear-gradient(135deg, rgba(30, 42, 138, 0.85), rgba(6, 10, 46, 0.75));
+  border: 1.5px solid transparent;
+  background-clip: padding-box;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 0 40px rgba(79, 99, 255, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* ---------- AirLume curve divider (dark → light) ---------- */
+.curve-divider {
+  height: 80px;
+  background: var(--color-light);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  margin-top: -80px;
+  position: relative;
+  z-index: 1;
+}
+.floating-cards {
+  position: relative;
+  z-index: 2;
+}
+
+/* ---------- feature card hover ---------- */
+.feature-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(18, 22, 58, 0.1);
 }
 
 /* Skeleton shimmer for loading states */

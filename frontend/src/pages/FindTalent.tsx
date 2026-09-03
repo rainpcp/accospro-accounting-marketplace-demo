@@ -88,7 +88,7 @@ export default function FindTalent() {
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
           {data.map((t) => (
-            <article key={t.id} className="rounded-2xl border bg-white p-5 transition hover:border-indigo-200 hover:shadow-md">
+            <article key={t.id} className="rounded-2xl border bg-white p-5 transition hover:border-primary-200 hover:shadow-md">
               <div className="flex items-start justify-between gap-2">
                 <h2 className="font-bold">{t.name}</h2>
                 <Rating value={t.rating} count={t.review_count} />

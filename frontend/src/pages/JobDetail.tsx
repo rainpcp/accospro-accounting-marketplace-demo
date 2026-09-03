@@ -53,7 +53,7 @@ export default function JobDetail() {
 
   return (
     <div className="space-y-4">
-      <Link to="/jobboard" className="text-sm text-slate-500 hover:text-indigo-600">← กลับ Jobboard</Link>
+      <Link to="/jobboard" className="text-sm text-slate-500 hover:text-primary-600">← กลับ Jobboard</Link>
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           <div className="rounded-2xl border bg-white p-5 sm:p-6">
@@ -70,7 +70,7 @@ export default function JobDetail() {
               <div className="mt-4 flex flex-wrap gap-2">
                 {job.images.map((im) => (
                   <a key={im.id} href={im.url} target="_blank" rel="noreferrer"
-                    className="block h-24 w-24 overflow-hidden rounded-xl border hover:ring-2 hover:ring-indigo-300">
+                    className="block h-24 w-24 overflow-hidden rounded-xl border hover:ring-2 hover:ring-primary-300">
                     <img src={im.url} alt="รูปประกอบงาน" loading="lazy" className="h-full w-full object-cover" />
                   </a>
                 ))}
@@ -82,7 +82,7 @@ export default function JobDetail() {
         <div className="space-y-4">
           <div className="rounded-2xl border bg-white p-5 lg:sticky lg:top-20">
             <p className="text-sm text-slate-500">งบประมาณ</p>
-            <p className="text-3xl font-bold text-indigo-700">{baht(job.budget)}</p>
+            <p className="text-3xl font-bold text-primary-700">{baht(job.budget)}</p>
             <div className="mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
               <b className="text-slate-900">จ้างอย่างมั่นใจ:</b> เริ่มจากงานเล็กก่อนได้
               มีปัญหารายงานผ่านแพลตฟอร์มได้ตลอด
@@ -93,7 +93,7 @@ export default function JobDetail() {
             <h2 className="font-bold">ยื่นข้อเสนอ ({job.proposals})</h2>
             {!user ? (
               <p className="mt-2 text-sm text-slate-500">
-                <Link to="/login" className="font-semibold text-indigo-600">เข้าสู่ระบบ</Link> ก่อนยื่นข้อเสนอ
+                <Link to="/login" className="font-semibold text-primary-600">เข้าสู่ระบบ</Link> ก่อนยื่นข้อเสนอ
               </p>
             ) : sent ? (
               <p className="mt-2 rounded-xl bg-emerald-50 px-4 py-2.5 text-sm text-emerald-700 ring-1 ring-emerald-200" role="status">

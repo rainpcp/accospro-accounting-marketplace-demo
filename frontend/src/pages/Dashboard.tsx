@@ -52,7 +52,7 @@ export default function Dashboard() {
             {loading ? "กำลังโหลด…" : `งานเปิดรับทั้งหมด ${open} งาน`}
           </p>
         </div>
-        <Link to="/post-job" className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">
+        <Link to="/post-job" className="rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700">
           + โพสต์งานใหม่
         </Link>
       </div>

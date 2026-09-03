@@ -48,12 +48,12 @@ export default function ImageUpload({ jobType, jobId }: Props) {
     <div>
       <div className="flex flex-wrap gap-2">
         {urls.map((u) => (
-          <a key={u} href={u} target="_blank" rel="noreferrer" className="block h-20 w-20 overflow-hidden rounded-xl border hover:ring-2 hover:ring-indigo-300">
+          <a key={u} href={u} target="_blank" rel="noreferrer" className="block h-20 w-20 overflow-hidden rounded-xl border hover:ring-2 hover:ring-primary-300">
             <img src={u} alt="รูปแนบงาน" loading="lazy" className="h-full w-full object-cover" />
           </a>
         ))}
         {urls.length < MAX && (
-          <label className="grid h-20 w-20 cursor-pointer place-items-center rounded-xl border border-dashed text-2xl text-slate-400 hover:border-indigo-400 hover:text-indigo-500">
+          <label className="grid h-20 w-20 cursor-pointer place-items-center rounded-xl border border-dashed text-2xl text-slate-400 hover:border-primary-400 hover:text-primary-500">
             <span aria-hidden>{busy ? "…" : "+"}</span>
             <span className="sr-only">แนบรูป (JPG/PNG/WebP ไม่เกิน 5MB)</span>
             <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple

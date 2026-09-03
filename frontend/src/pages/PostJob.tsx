@@ -1,6 +1,9 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../lib/auth";
 
 export default function PostJob() {
+  const { user, loading } = useAuth();
   const [kind, setKind] = useState<"sme" | "firm">("sme");
   const [form, setForm] = useState({ title: "", category: "ปิดงบ", budget: 5000, province: "กรุงเทพมหานคร", detail: "" });
   const [msg, setMsg] = useState("");
@@ -14,6 +17,19 @@ export default function PostJob() {
     }).then((x) => x.json());
     setMsg(r.ok ? `โพสต์สำเร็จ id=${r.id}${r.mock ? " (mock)" : ""}` : `ผิดพลาด: ${r.error}`);
   };
+
+  if (!loading && !user) {
+    return (
+      <div className="mx-auto max-w-md rounded-2xl border bg-white p-6 text-center">
+        <h1 className="text-xl font-bold">โพสต์งานต้องเข้าสู่ระบบก่อน</h1>
+        <p className="mt-2 text-sm text-slate-500">สมัครฟรี 30 วินาที เลือกบทบาท SME / สำนักงานบัญชี / ฟรีแลนซ์</p>
+        <div className="mt-4 flex justify-center gap-2">
+          <Link to="/login" className="rounded-xl bg-indigo-600 px-4 py-2 text-white">เข้าสู่ระบบ</Link>
+          <Link to="/register" className="rounded-xl border px-4 py-2">สมัครฟรี</Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">

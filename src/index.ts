@@ -153,6 +153,115 @@ app.post("/api/proposals", async (c) => {
   }
 });
 
+// ---------- auth: email+password + D1 session cookie (ไม่พึ่ง provider ภายนอก) ----------
+const SESSION_DAYS = 30;
+
+function hex(bytes: Uint8Array): string {
+  return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function sha256(text: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return hex(new Uint8Array(digest));
+}
+
+async function hashPassword(password: string): Promise<string> {
+  const salt = hex(crypto.getRandomValues(new Uint8Array(16)));
+  return `${salt}$${await sha256(salt + ":" + password)}`;
+}
+
+async function verifyPassword(password: string, stored: string): Promise<boolean> {
+  const [salt, hash] = stored.split("$");
+  if (!salt || !hash) return false;
+  return (await sha256(salt + ":" + password)) === hash;
+}
+
+function sessionCookie(c: any, token: string, maxAge: number): string {
+  const secure = new URL(c.req.url).protocol === "https:" ? "; Secure" : "";
+  return `session=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${maxAge}${secure}`;
+}
+
+function getSessionToken(c: any): string | null {
+  const header = c.req.header("cookie") || "";
+  const m = header.match(/(?:^|;\s*)session=([^;]+)/);
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
+async function getSessionUser(c: any): Promise<any | null> {
+  if (!c.env.DB) return null;
+  const token = getSessionToken(c);
+  if (!token) return null;
+  const s: any = await c.env.DB.prepare("SELECT user_id, expires_at FROM sessions WHERE token = ?").bind(token).first();
+  if (!s || Number(s.expires_at) < Date.now()) return null;
+  const u: any = await c.env.DB.prepare("SELECT id, role, name, email, phone FROM users WHERE id = ?").bind(s.user_id).first();
+  return u || null;
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+app.post("/api/auth/register", async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  const name = String(body.name || "").trim();
+  const email = String(body.email || "").trim().toLowerCase();
+  const password = String(body.password || "");
+  const role = ["sme", "firm", "talent"].includes(body.role) ? body.role : "sme";
+  if (!name || !EMAIL_RE.test(email) || password.length < 8)
+    return c.json({ error: "กรอกชื่อ + อีเมลให้ถูก + รหัสผ่าน ≥ 8 ตัว" }, 400);
+  try {
+    if (!c.env.DB) throw new Error("no-d1");
+    const dup: any = await c.env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(email).first();
+    if (dup) return c.json({ error: "อีเมลนี้สมัครแล้ว ลอง login" }, 409);
+    const id = `u-${Date.now().toString(36)}${Math.floor(Math.random() * 1e4)}`;
+    await c.env.DB.prepare(
+      "INSERT INTO users (id, role, name, email, phone, password_hash) VALUES (?,?,?,?,?,?)"
+    ).bind(id, role, name, email, String(body.phone || ""), await hashPassword(password)).run();
+    const token = hex(crypto.getRandomValues(new Uint8Array(32)));
+    await c.env.DB.prepare("INSERT INTO sessions (token, user_id, expires_at) VALUES (?,?,?)")
+      .bind(token, id, Date.now() + SESSION_DAYS * 86400 * 1000).run();
+    c.header("Set-Cookie", sessionCookie(c, token, SESSION_DAYS * 86400));
+    return c.json({ ok: true, user: { id, role, name, email } });
+  } catch (e: any) {
+    if (e?.message === "no-d1") return c.json({ ok: true, mock: true, note: "ยังไม่ต่อ D1" });
+    throw e;
+  }
+});
+
+app.post("/api/auth/login", async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  const email = String(body.email || "").trim().toLowerCase();
+  const password = String(body.password || "");
+  if (!EMAIL_RE.test(email) || !password) return c.json({ error: "กรอกอีเมล + รหัสผ่าน" }, 400);
+  try {
+    if (!c.env.DB) throw new Error("no-d1");
+    const u: any = await c.env.DB.prepare("SELECT * FROM users WHERE email = ?").bind(email).first();
+    if (!u?.password_hash || !(await verifyPassword(password, u.password_hash)))
+      return c.json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" }, 401);
+    const token = hex(crypto.getRandomValues(new Uint8Array(32)));
+    await c.env.DB.prepare("INSERT INTO sessions (token, user_id, expires_at) VALUES (?,?,?)")
+      .bind(token, u.id, Date.now() + SESSION_DAYS * 86400 * 1000).run();
+    c.header("Set-Cookie", sessionCookie(c, token, SESSION_DAYS * 86400));
+    return c.json({ ok: true, user: { id: u.id, role: u.role, name: u.name, email: u.email } });
+  } catch (e: any) {
+    if (e?.message === "no-d1") return c.json({ error: "ยังไม่ต่อ D1" }, 503);
+    throw e;
+  }
+});
+
+app.post("/api/auth/logout", async (c) => {
+  try {
+    const token = getSessionToken(c);
+    if (c.env.DB && token) await c.env.DB.prepare("DELETE FROM sessions WHERE token = ?").bind(token).run();
+  } catch { /* ignore */ }
+  c.header("Set-Cookie", sessionCookie(c, "", 0));
+  return c.json({ ok: true });
+});
+
+app.get("/api/auth/me", async (c) => {
+  const user = await getSessionUser(c).catch(() => null);
+  if (!user) return c.json({ user: null });
+  return c.json({ user });
+});
+
 // R2 upload demo (optional — ถ้ายังไม่ bind R2 จะตอบ mock)
 app.post("/api/upload", async (c) => {
   try {

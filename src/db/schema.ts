@@ -1,12 +1,20 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 
-// users: sme | firm | talent | admin (demo ใช้ mock login)
+// users: sme | firm | talent | admin — login ด้วย email+password, session เก็บใน D1
 export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
   role: text("role").notNull(), // sme | firm | talent | admin
   name: text("name").notNull(),
   email: text("email").notNull(),
   phone: text("phone"),
+  passwordHash: text("password_hash"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+export const sessions = sqliteTable("sessions", {
+  token: text("token").primaryKey(),
+  userId: text("user_id").notNull(),
+  expiresAt: integer("expires_at").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 

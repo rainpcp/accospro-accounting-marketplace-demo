@@ -29,18 +29,23 @@ app.get("/api/health", (c) =>
 app.get("/api/firms", async (c) => {
   const q = (c.req.query("q") || "").toLowerCase();
   const province = c.req.query("province") || "";
+  const category = c.req.query("category") || "";
+  const minRating = Number(c.req.query("minRating") || 0);
   try {
     if (!c.env.DB) throw new Error("no-d1");
     let sql = "SELECT * FROM firms WHERE 1=1";
     const params: unknown[] = [];
     if (province) { sql += " AND province = ?"; params.push(province); }
     if (q) { sql += " AND (name LIKE ? OR intro LIKE ?)"; params.push(`%${q}%`, `%${q}%`); }
+    if (category) { sql += " AND categories LIKE ?"; params.push(`%${category}%`); }
+    if (minRating > 0) { sql += " AND rating >= ?"; params.push(minRating); }
     sql += " ORDER BY rating DESC LIMIT 50";
     const { results } = await c.env.DB.prepare(sql).bind(...params).all();
     return c.json({ data: results.map((r: any) => ({ ...r, categories: JSON.parse(r.categories || "[]") })) });
   } catch {
     const data = MOCK_FIRMS.filter(
       (f) => (!province || f.province === province) && (!q || f.name.toLowerCase().includes(q))
+        && (!category || f.categories.includes(category)) && f.rating >= minRating
     );
     return c.json({ data, mock: true });
   }
@@ -64,18 +69,23 @@ app.get("/api/firms/:id", async (c) => {
 app.get("/api/talents", async (c) => {
   const q = (c.req.query("q") || "").toLowerCase();
   const province = c.req.query("province") || "";
+  const skill = c.req.query("skill") || "";
+  const minRating = Number(c.req.query("minRating") || 0);
   try {
     if (!c.env.DB) throw new Error("no-d1");
     let sql = "SELECT * FROM talents WHERE 1=1";
     const params: unknown[] = [];
     if (province) { sql += " AND province = ?"; params.push(province); }
     if (q) { sql += " AND (name LIKE ? OR intro LIKE ?)"; params.push(`%${q}%`, `%${q}%`); }
+    if (skill) { sql += " AND skills LIKE ?"; params.push(`%${skill}%`); }
+    if (minRating > 0) { sql += " AND rating >= ?"; params.push(minRating); }
     sql += " ORDER BY rating DESC LIMIT 50";
     const { results } = await c.env.DB.prepare(sql).bind(...params).all();
     return c.json({ data: results.map((r: any) => ({ ...r, skills: JSON.parse(r.skills || "[]") })) });
   } catch {
     const data = MOCK_TALENTS.filter(
       (t) => (!province || t.province === province) && (!q || t.name.toLowerCase().includes(q))
+        && (!skill || t.skills.includes(skill)) && t.rating >= minRating
     );
     return c.json({ data, mock: true });
   }

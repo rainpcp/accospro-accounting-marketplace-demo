@@ -19,7 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refresh = async () => {
     try {
-      const r = await fetch("/api/auth/me").then((x) => x.json());
+      const r: any = await fetch("/api/auth/me").then((x) => x.json());
       setUser(r.user || null);
     } catch {
       setUser(null);
@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => { refresh(); }, []);
 
   const login = async (email: string, password: string) => {
-    const r = await fetch("/api/auth/login", {
+    const r: any = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const register = async (input: { name: string; email: string; password: string; role: string }) => {
-    const r = await fetch("/api/auth/register", {
+    const r: any = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(input),

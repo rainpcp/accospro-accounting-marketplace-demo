@@ -1,0 +1,126 @@
+import { useState, type ReactNode } from "react";
+import { baht } from "../lib/data";
+
+/* ---------- trust: rating + count (เหนือ fold เสมอ) ---------- */
+export function Rating({ value, count, dark = false }: { value: number; count: number; dark?: boolean }) {
+  return (
+    <span className={`inline-flex items-center gap-1 text-sm font-semibold ${dark ? "text-amber-300" : "text-amber-600"}`} aria-label={`คะแนน ${value} จาก ${count} รีวิว`}>
+      <span aria-hidden>★</span> {value.toFixed(1)}
+      <span className={`font-normal ${dark ? "text-white/70" : "text-slate-500"}`}>({count})</span>
+    </span>
+  );
+}
+
+/* ---------- trust: verified badge (DBD / CPA / AccOS Pro) ---------- */
+export function VerifiedBadge({ label }: { label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-emerald-200">
+      <span aria-hidden>✓</span> {label}
+    </span>
+  );
+}
+
+export function AccosBadge() {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 ring-1 ring-indigo-200">
+      ใช้ AccOS Pro
+    </span>
+  );
+}
+
+/* ---------- category / skill chip ---------- */
+export function Chip({ children, tone = "slate" }: { children: ReactNode; tone?: "slate" | "brand" }) {
+  const cls = tone === "brand"
+    ? "bg-indigo-50 text-indigo-700 ring-indigo-100"
+    : "bg-slate-100 text-slate-600 ring-slate-200/60";
+  return <span className={`rounded-full px-2.5 py-0.5 text-xs ring-1 ${cls}`}>{children}</span>;
+}
+
+/* ---------- price ---------- */
+export function PriceRange({ min, max, suffix = "/เดือน" }: { min: number; max: number; suffix?: string }) {
+  return (
+    <p className="text-sm font-semibold text-slate-900">
+      {baht(min)}–{baht(max)}<span className="font-normal text-slate-500">{suffix}</span>
+    </p>
+  );
+}
+
+/* ---------- loading skeleton card ---------- */
+export function SkeletonCard() {
+  return (
+    <div className="rounded-2xl border bg-white p-5" aria-hidden>
+      <div className="skeleton h-5 w-2/3" />
+      <div className="skeleton mt-2 h-4 w-1/3" />
+      <div className="mt-3 flex gap-2">
+        <div className="skeleton h-6 w-16" />
+        <div className="skeleton h-6 w-20" />
+      </div>
+      <div className="skeleton mt-3 h-4 w-full" />
+    </div>
+  );
+}
+
+/* ---------- zero-result / empty state (มีทางออกเสมอ) ---------- */
+export function EmptyState({ title, hint, action }: { title: string; hint: string; action?: ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-dashed bg-white p-8 text-center">
+      <p className="text-lg font-semibold">{title}</p>
+      <p className="mx-auto mt-1 max-w-md text-sm text-slate-500">{hint}</p>
+      {action && <div className="mt-4 flex justify-center gap-2">{action}</div>}
+    </div>
+  );
+}
+
+/* ---------- form field with real <label> ---------- */
+export function Field({ label, error, children }: { label: string; error?: string; children: ReactNode }) {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-sm font-medium text-slate-700">{label}</span>
+      {children}
+      {error && <span className="mt-1 block text-sm text-rose-600">{error}</span>}
+    </label>
+  );
+}
+
+export const inputCls =
+  "w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-[16px] placeholder:text-slate-400 hover:border-slate-400";
+
+/* ---------- password with show/hide ---------- */
+export function PasswordField({ value, onChange, onEnter, placeholder = "รหัสผ่าน ≥ 8 ตัว" }: {
+  value: string; onChange: (v: string) => void; onEnter?: () => void; placeholder?: string;
+}) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && onEnter?.()}
+        type={show ? "text" : "password"}
+        placeholder={placeholder}
+        autoComplete="current-password"
+        className={`${inputCls} pr-16`}
+        aria-label="รหัสผ่าน"
+      />
+      <button
+        type="button"
+        onClick={() => setShow(!show)}
+        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-sm text-slate-500 hover:bg-slate-100"
+      >
+        {show ? "ซ่อน" : "แสดง"}
+      </button>
+    </div>
+  );
+}
+
+/* ---------- job status ---------- */
+const STATUS: Record<string, { th: string; cls: string }> = {
+  open: { th: "เปิดรับ", cls: "bg-emerald-50 text-emerald-700 ring-emerald-200" },
+  matched: { th: "จับคู่แล้ว", cls: "bg-amber-50 text-amber-700 ring-amber-200" },
+  closed: { th: "ปิดงาน", cls: "bg-slate-100 text-slate-500 ring-slate-200" },
+};
+
+export function StatusChip({ status }: { status: string }) {
+  const s = STATUS[status] || { th: status, cls: "bg-slate-100 text-slate-500 ring-slate-200" };
+  return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ${s.cls}`}>{s.th}</span>;
+}

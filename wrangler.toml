@@ -15,10 +15,10 @@ binding = "DB"
 database_name = "accospro-marketplace-demo-db"
 database_id = "3a895566-4cfe-45d0-82f7-84748d4a3802"
 
-# R2 — free: 10GB (เปิดใน Dashboard → R2 → Enable แล้วค่อย uncomment)
-# [[r2_buckets]]
-# binding = "DOCS"
-# bucket_name = "accospro-marketplace-docs"
+# R2 — free: 10GB (bucket accospro-marketplace-docs สร้างแล้ว)
+[[r2_buckets]]
+binding = "DOCS"
+bucket_name = "accospro-marketplace-docs"
 
 [observability]
 enabled = true

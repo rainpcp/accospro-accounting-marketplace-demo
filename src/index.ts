@@ -91,11 +91,14 @@ app.get("/api/talents", async (c) => {
   }
 });
 
-// ---- jobs ----
+// ---- jobs (cover = รูปแรกของงาน) ----
+const COVER_SQL = `(SELECT '/api/files/' || r2_key FROM images WHERE owner_type = ? AND owner_id = %s ORDER BY rowid LIMIT 1) AS cover`;
+
 app.get("/api/jobs-sme", async (c) => {
   try {
     if (!c.env.DB) throw new Error("no-d1");
-    const { results } = await c.env.DB.prepare("SELECT * FROM jobs_sme ORDER BY rowid DESC LIMIT 50").all();
+    const sql = `SELECT *, ${COVER_SQL.replace("%s", "jobs_sme.id")} FROM jobs_sme ORDER BY rowid DESC LIMIT 50`;
+    const { results } = await c.env.DB.prepare(sql).bind("sme").all();
     return c.json({ data: results });
   } catch {
     return c.json({ data: [
@@ -108,7 +111,8 @@ app.get("/api/jobs-sme", async (c) => {
 app.get("/api/jobs-firm", async (c) => {
   try {
     if (!c.env.DB) throw new Error("no-d1");
-    const { results } = await c.env.DB.prepare("SELECT * FROM jobs_firm ORDER BY rowid DESC LIMIT 50").all();
+    const sql = `SELECT *, ${COVER_SQL.replace("%s", "jobs_firm.id")} FROM jobs_firm ORDER BY rowid DESC LIMIT 50`;
+    const { results } = await c.env.DB.prepare(sql).bind("firm").all();
     return c.json({ data: results });
   } catch {
     return c.json({ data: [
@@ -272,18 +276,67 @@ app.get("/api/auth/me", async (c) => {
   return c.json({ user });
 });
 
-// R2 upload demo (optional — ถ้ายังไม่ bind R2 จะตอบ mock)
+// ---------- รูปแนบงาน: ไฟล์จริงใน Cloudflare R2 (ฟรี 10GB, ไม่มีค่า egress) ----------
+const ALLOW_IMG = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const MAX_IMG_BYTES = 5 * 1024 * 1024; // 5MB/รูป
+const MAX_IMG_PER_JOB = 5;
+
 app.post("/api/upload", async (c) => {
+  if (!c.env.DB || !c.env.DOCS)
+    return c.json({ ok: false, mock: true, note: "เปิด R2 ใน Dashboard แล้ว bind bucket DOCS ก่อน (ดู README)" });
+  const form = await c.req.formData().catch(() => null);
+  const file = form?.get("file") as File | null;
+  const jobType = String(form?.get("jobType") || "");
+  const jobId = String(form?.get("jobId") || "");
+  if (!file || file.size === 0) return c.json({ error: "แนบไฟล์รูปก่อน" }, 400);
+  if (!["sme", "firm"].includes(jobType) || !jobId) return c.json({ error: "jobType (sme|firm) + jobId ไม่ครบ" }, 400);
+  if (!ALLOW_IMG.includes(file.type)) return c.json({ error: "รับเฉพาะ JPG/PNG/WebP/GIF" }, 400);
+  if (file.size > MAX_IMG_BYTES) return c.json({ error: "รูปใหญ่เกิน 5MB" }, 400);
+  const n: any = await c.env.DB.prepare("SELECT COUNT(*) AS c FROM images WHERE owner_type = ? AND owner_id = ?")
+    .bind(jobType, jobId).first();
+  if (Number(n?.c || 0) >= MAX_IMG_PER_JOB) return c.json({ error: `แนบได้สูงสุด ${MAX_IMG_PER_JOB} รูปต่องาน` }, 400);
+
+  const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80) || "img";
+  const rand = [...crypto.getRandomValues(new Uint8Array(6))].map((b) => b.toString(16).padStart(2, "0")).join("");
+  const key = `jobs/${jobType}/${jobId}/${Date.now()}-${rand}-${safe}`;
+  await c.env.DOCS.put(key, file.stream(), {
+    httpMetadata: { contentType: file.type, cacheControl: "public, max-age=86400" },
+  });
+  const id = `img-${Date.now().toString(36)}${rand}`;
+  await c.env.DB.prepare(
+    "INSERT INTO images (id, owner_type, owner_id, r2_key, content_type, size) VALUES (?,?,?,?,?,?)"
+  ).bind(id, jobType, jobId, key, file.type, file.size).run();
+  return c.json({ ok: true, id, url: `/api/files/${key}` });
+});
+
+// เสิร์ฟไฟล์จาก R2 ผ่าน Worker (edge cache 1 วัน)
+app.get("/api/files/:key{.+}", async (c) => {
+  if (!c.env.DOCS) return c.json({ error: "ยังไม่ต่อ R2" }, 503);
+  const key = c.req.param("key");
+  if (key.includes("..")) return c.json({ error: "bad key" }, 400);
+  const obj = await c.env.DOCS.get(key);
+  if (!obj) return c.json({ error: "ไม่พบไฟล์" }, 404);
+  const headers: Record<string, string> = {
+    "Content-Type": obj.httpMetadata?.contentType || "application/octet-stream",
+    "Cache-Control": "public, max-age=86400",
+    ETag: obj.httpEtag,
+  };
+  return new Response(obj.body, { headers });
+});
+
+// รูปทั้งหมดของงานเดียว
+app.get("/api/images", async (c) => {
+  const jobType = c.req.query("jobType") || "";
+  const jobId = c.req.query("jobId") || "";
+  if (!jobType || !jobId) return c.json({ error: "jobType + jobId required" }, 400);
   try {
-    if (!c.env.DOCS) throw new Error("no-r2");
-    const form = await c.req.formData();
-    const file = form.get("file") as File | null;
-    if (!file) return c.json({ error: "file required" }, 400);
-    const key = `uploads/${Date.now()}-${file.name}`;
-    await c.env.DOCS.put(key, file.stream(), { httpMetadata: { contentType: file.type } });
-    return c.json({ ok: true, key });
+    if (!c.env.DB) throw new Error("no-d1");
+    const { results } = await c.env.DB.prepare(
+      "SELECT id, r2_key, content_type FROM images WHERE owner_type = ? AND owner_id = ? ORDER BY rowid"
+    ).bind(jobType, jobId).all();
+    return c.json({ data: (results as any[]).map((r) => ({ id: r.id, url: `/api/files/${r.r2_key}`, contentType: r.content_type })) });
   } catch {
-    return c.json({ ok: true, mock: true, note: "bind R2 bucket DOCS ก่อนใช้จริง" });
+    return c.json({ data: [], mock: true });
   }
 });
 

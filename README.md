@@ -34,6 +34,13 @@ npm run deploy
 ผูกโดเมน `marketplace-demo.accospro.app`:
 Cloudflare Dashboard → Workers → Custom Domains → Add (SSL ฟรีอัตโนมัติ)
 
+## เปิดรูปภาพ R2 (ครั้งเดียว)
+
+1. Cloudflare Dashboard → **R2** → **Enable R2** (ฟรี 10GB)
+2. R2 → Create bucket ชื่อ `accospro-marketplace-docs`
+3. ใน `wrangler.toml` uncomment บล็อก `[[r2_buckets]]`
+4. `npm run deploy` — หน้าโพสต์งานจะมีที่แนบรูป (JPG/PNG/WebP ≤5MB, 5 รูป/งาน) เสิร์ฟผ่าน `GET /api/files/...` (edge cache 1 วัน)
+
 ## Free limits (demo พอเหลือๆ)
 
 | ตัว | ฟรี | ใช้จริง demo |
@@ -52,7 +59,9 @@ Cloudflare Dashboard → Workers → Custom Domains → Add (SSL ฟรีอั
 - `GET /api/jobs-sme` / `POST /api/jobs-sme`
 - `GET /api/jobs-firm` / `POST /api/jobs-firm`
 - `POST /api/proposals`
-- `POST /api/upload` (ต้อง bind R2 `DOCS` ก่อน)
+- `POST /api/upload` (multipart: file + jobType + jobId — ต้องเปิด R2 ก่อน)
+- `GET /api/files/<key>` (เสิร์ฟรูปจาก R2, cache 1 วัน)
+- `GET /api/images?jobType=&jobId=` (รูปของงานเดียว)
 
 ## โครง repo
 

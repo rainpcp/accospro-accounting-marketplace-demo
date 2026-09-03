@@ -94,3 +94,14 @@ export const reviews = sqliteTable("reviews", {
   comment: text("comment"),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
+
+// รูปแนบของงาน — ไฟล์จริงใน R2, D1 เก็บ key + meta
+export const images = sqliteTable("images", {
+  id: text("id").primaryKey(),
+  ownerType: text("owner_type").notNull(), // sme | firm
+  ownerId: text("owner_id").notNull(), // job id
+  r2Key: text("r2_key").notNull(),
+  contentType: text("content_type").notNull(),
+  size: integer("size").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});

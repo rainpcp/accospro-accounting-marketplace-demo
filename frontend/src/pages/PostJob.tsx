@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import { FIRM_CATEGORIES, PROVINCES } from "../lib/data";
 import { Field, inputCls } from "../components/ui";
+import ImageUpload from "../components/ImageUpload";
 
 export default function PostJob() {
   const { user, loading } = useAuth();
@@ -39,13 +40,19 @@ export default function PostJob() {
 
   if (doneId) {
     return (
-      <div className="mx-auto max-w-md rounded-2xl border bg-white p-6 text-center">
-        <p className="text-4xl" aria-hidden>✓</p>
-        <h1 className="mt-2 text-xl font-bold">โพสต์งานสำเร็จ</h1>
-        <p className="mt-1 text-sm text-slate-500">รหัสงาน {doneId} · firm/talent ที่สนใจจะเข้ามาเสนอราคา</p>
-        <div className="mt-4 flex justify-center gap-2">
-          <Link to="/dashboard" className="rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white">ดูงานของฉัน</Link>
-          <button onClick={() => { setDoneId(""); setForm({ ...form, title: "", detail: "" }); }} className="rounded-xl border px-4 py-2 font-semibold">โพสต์อีกงาน</button>
+      <div className="mx-auto max-w-md space-y-4">
+        <div className="rounded-2xl border bg-white p-6 text-center">
+          <p className="text-4xl" aria-hidden>✓</p>
+          <h1 className="mt-2 text-xl font-bold">โพสต์งานสำเร็จ</h1>
+          <p className="mt-1 text-sm text-slate-500">รหัสงาน {doneId} · firm/talent ที่สนใจจะเข้ามาเสนอราคา</p>
+        </div>
+        <div className="rounded-2xl border bg-white p-5">
+          <h2 className="font-bold">แนบรูปประกอบงาน <span className="font-normal text-slate-500">(เช่น ตัวอย่างบิล/หน้าร้าน — งานมีรูปได้ข้อเสนอเร็วกว่า)</span></h2>
+          <div className="mt-3"><ImageUpload jobType={kind} jobId={doneId} /></div>
+          <div className="mt-4 flex justify-center gap-2">
+            <Link to="/dashboard" className="rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white">ดูงานของฉัน</Link>
+            <button onClick={() => { setDoneId(""); setForm({ ...form, title: "", detail: "" }); }} className="rounded-xl border px-4 py-2 font-semibold">โพสต์อีกงาน</button>
+          </div>
         </div>
       </div>
     );

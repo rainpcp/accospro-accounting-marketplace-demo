@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { baht } from "../lib/data";
 import { EmptyState, SkeletonCard, StatusChip } from "../components/ui";
 
-type Job = { id: string; title: string; category: string; budget: number; province?: string; status: string };
+type Job = { id: string; title: string; category: string; budget: number; province?: string; status: string; cover?: string | null };
 
 function JobList({ jobs, emptyHint }: { jobs: Job[]; emptyHint: string }) {
   if (jobs.length === 0)
@@ -11,7 +11,12 @@ function JobList({ jobs, emptyHint }: { jobs: Job[]; emptyHint: string }) {
   return (
     <div className="grid gap-2">
       {jobs.map((j) => (
-        <div key={j.id} className="flex flex-wrap items-center gap-2 rounded-xl border bg-white p-4 text-sm">
+        <div key={j.id} className="flex flex-wrap items-center gap-3 rounded-xl border bg-white p-4 text-sm">
+          {j.cover && (
+            <a href={j.cover} target="_blank" rel="noreferrer" className="block h-14 w-14 shrink-0 overflow-hidden rounded-lg border">
+              <img src={j.cover} alt="" loading="lazy" className="h-full w-full object-cover" />
+            </a>
+          )}
           <b className="mr-auto">{j.title}</b>
           <StatusChip status={j.status} />
           <span className="text-slate-500">{j.category} · {baht(j.budget)}{j.province ? ` · ${j.province}` : ""}</span>

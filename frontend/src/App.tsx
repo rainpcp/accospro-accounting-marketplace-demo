@@ -3,6 +3,8 @@ import { Link, NavLink, Route, Routes, useNavigate } from "react-router-dom";
 import Home from "./pages/Home";
 import FindFirm from "./pages/FindFirm";
 import FindTalent from "./pages/FindTalent";
+import Jobboard from "./pages/Jobboard";
+import JobDetail from "./pages/JobDetail";
 import PostJob from "./pages/PostJob";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
@@ -17,6 +19,7 @@ function DesktopNav() {
   const nav = useNavigate();
   return (
     <nav className="ml-auto hidden items-center gap-1 text-sm md:flex" aria-label="หลัก">
+      <NavLink to="/jobboard" className={linkCls}>Jobboard</NavLink>
       <NavLink to="/find-firm" className={linkCls}>A · หาสำนักงานบัญชี</NavLink>
       <NavLink to="/find-talent" className={linkCls}>B · หาทีมช่วยงาน</NavLink>
       <NavLink to="/post-job" className="rounded-lg bg-slate-900 px-3 py-2 font-semibold text-white hover:bg-slate-700">โพสต์งานฟรี</NavLink>
@@ -50,6 +53,7 @@ function MobileMenu() {
       {open && (
         <div className="absolute inset-x-4 top-16 z-20 space-y-1 rounded-2xl border bg-white p-3 shadow-xl">
           {[
+            ["/jobboard", "Jobboard"],
             ["/find-firm", "A · หาสำนักงานบัญชี"],
             ["/find-talent", "B · หาทีมช่วยงาน"],
             ["/post-job", "โพสต์งานฟรี"],
@@ -78,9 +82,9 @@ function BottomNav() {
     <nav className="fixed inset-x-0 bottom-0 z-10 border-t bg-white/95 backdrop-blur md:hidden" aria-label="ล่าง">
       <div className="flex">
         <NavLink to="/" className={active}><span className="text-lg" aria-hidden>⌂</span>หน้าแรก</NavLink>
-        <NavLink to="/find-firm" className={active}><span className="text-lg" aria-hidden>🏢</span>หา firm</NavLink>
+        <NavLink to="/jobboard" className={active}><span className="text-lg" aria-hidden>▦</span>งาน</NavLink>
         <NavLink to="/post-job" className={active}><span className="text-lg" aria-hidden>+</span>โพสต์งาน</NavLink>
-        <NavLink to="/find-talent" className={active}><span className="text-lg" aria-hidden>🧑‍💼</span>หา talent</NavLink>
+        <NavLink to="/find-firm" className={active}><span className="text-lg" aria-hidden>🏢</span>หา firm</NavLink>
         <NavLink to="/dashboard" className={active}><span className="text-lg" aria-hidden>▤</span>งานฉัน</NavLink>
       </div>
     </nav>
@@ -105,6 +109,8 @@ export default function App() {
         <main className="mx-auto max-w-6xl px-4 py-6">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/jobboard" element={<Jobboard />} />
+            <Route path="/jobs/:type/:id" element={<JobDetail />} />
             <Route path="/find-firm" element={<FindFirm />} />
             <Route path="/find-talent" element={<FindTalent />} />
             <Route path="/post-job" element={<PostJob />} />
@@ -123,6 +129,7 @@ export default function App() {
             <div>
               <p className="font-bold">เริ่มใช้งาน</p>
               <ul className="mt-1 space-y-1 text-slate-500">
+                <li><Link to="/jobboard" className="hover:text-indigo-600">Jobboard รวมงานบัญชี</Link></li>
                 <li><Link to="/find-firm" className="hover:text-indigo-600">SME หาสำนักงานบัญชี</Link></li>
                 <li><Link to="/find-talent" className="hover:text-indigo-600">สำนักงานบัญชีหาทีม</Link></li>
                 <li><Link to="/post-job" className="hover:text-indigo-600">โพสต์งานฟรี</Link></li>

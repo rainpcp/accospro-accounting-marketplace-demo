@@ -41,3 +41,11 @@ export const PROVINCES = [
 ] as const;
 
 export const baht = (n: number) => `฿${Number(n || 0).toLocaleString("th-TH")}`;
+
+export function fmtDateTime(ts: unknown): string {
+  const t = Number(ts || 0);
+  if (!t) return "-";
+  const d = new Date(t);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}

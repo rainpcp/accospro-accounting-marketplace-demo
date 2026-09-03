@@ -61,6 +61,14 @@ export default function Home() {
         </div>
       </section>
 
+      {/* jobboard strip */}
+      <section className="flex flex-wrap items-center gap-3 rounded-2xl border bg-white p-5">
+        <p className="font-bold">Jobboard <span className="font-normal text-slate-500">— รวมประกาศงานบัญชีล่าสุด + AccOS Pro picks</span></p>
+        <Link to="/jobboard" className="ml-auto rounded-xl bg-slate-900 px-5 py-2.5 font-semibold text-white hover:bg-slate-700">
+          ดูงานทั้งหมด →
+        </Link>
+      </section>
+
       {/* dual paths */}
       <section className="grid gap-4 md:grid-cols-2">
         <div className="rounded-2xl border bg-white p-6">

@@ -91,14 +91,15 @@ app.get("/api/talents", async (c) => {
   }
 });
 
-// ---- jobs (cover = รูปแรกของงาน) ----
+// ---- jobs (cover = รูปแรกของงาน, proposals = จำนวนข้อเสนอ) ----
 const COVER_SQL = `(SELECT '/api/files/' || r2_key FROM images WHERE owner_type = ? AND owner_id = %s ORDER BY rowid LIMIT 1) AS cover`;
+const COUNT_SQL = `(SELECT COUNT(*) FROM proposals WHERE job_type = ? AND job_id = %s) AS proposals`;
 
 app.get("/api/jobs-sme", async (c) => {
   try {
     if (!c.env.DB) throw new Error("no-d1");
-    const sql = `SELECT *, ${COVER_SQL.replace("%s", "jobs_sme.id")} FROM jobs_sme ORDER BY rowid DESC LIMIT 50`;
-    const { results } = await c.env.DB.prepare(sql).bind("sme").all();
+    const sql = `SELECT *, ${COVER_SQL.replace("%s", "jobs_sme.id")}, ${COUNT_SQL.replace("%s", "jobs_sme.id")} FROM jobs_sme ORDER BY rowid DESC LIMIT 50`;
+    const { results } = await c.env.DB.prepare(sql).bind("sme", "sme").all();
     return c.json({ data: results });
   } catch {
     return c.json({ data: [
@@ -111,8 +112,8 @@ app.get("/api/jobs-sme", async (c) => {
 app.get("/api/jobs-firm", async (c) => {
   try {
     if (!c.env.DB) throw new Error("no-d1");
-    const sql = `SELECT *, ${COVER_SQL.replace("%s", "jobs_firm.id")} FROM jobs_firm ORDER BY rowid DESC LIMIT 50`;
-    const { results } = await c.env.DB.prepare(sql).bind("firm").all();
+    const sql = `SELECT *, ${COVER_SQL.replace("%s", "jobs_firm.id")}, ${COUNT_SQL.replace("%s", "jobs_firm.id")} FROM jobs_firm ORDER BY rowid DESC LIMIT 50`;
+    const { results } = await c.env.DB.prepare(sql).bind("firm", "firm").all();
     return c.json({ data: results });
   } catch {
     return c.json({ data: [
@@ -122,8 +123,37 @@ app.get("/api/jobs-firm", async (c) => {
   }
 });
 
-app.post("/api/jobs-sme", async (c) => {
-  const body = await c.req.json().catch(() => ({}));
+// รายละเอียดงานเดียว + รูป + จำนวนข้อเสนอ
+app.get("/api/jobs/:type/:id", async (c) => {
+  const type = c.req.param("type");
+  const id = c.req.param("id");
+  if (!["sme", "firm"].includes(type)) return c.json({ error: "type must be sme|firm" }, 400);
+  const table = type === "sme" ? "jobs_sme" : "jobs_firm";
+  try {
+    if (!c.env.DB) throw new Error("no-d1");
+    const job: any = await c.env.DB.prepare(`SELECT * FROM ${table} WHERE id = ?`).bind(id).first();
+    if (!job) return c.json({ error: "ไม่พบงานนี้" }, 404);
+    const imgs = await c.env.DB.prepare(
+      "SELECT id, r2_key, content_type FROM images WHERE owner_type = ? AND owner_id = ? ORDER BY rowid"
+    ).bind(type, id).all();
+    const n: any = await c.env.DB.prepare(
+      "SELECT COUNT(*) AS c FROM proposals WHERE job_type = ? AND job_id = ?"
+    ).bind(type, id).first();
+    return c.json({
+      data: {
+        ...job,
+        jobType: type,
+        images: ((imgs.results || []) as any[]).map((r) => ({ id: r.id, url: `/api/files/${r.r2_key}` })),
+        proposals: Number(n?.c || 0),
+      },
+    });
+  } catch (e: any) {
+    if (e?.message === "no-d1") return c.json({ error: "ยังไม่ต่อ D1" }, 503);
+    throw e;
+  }
+});
+
+app.post("/api/jobs-sme", async (c) => {  const body = await c.req.json().catch(() => ({}));
   if (!body.title || !body.category) return c.json({ error: "title + category required" }, 400);
   try {
     if (!c.env.DB) throw new Error("no-d1");

@@ -1,0 +1,25 @@
+# AccOS Pro worker — full-stack demo (free tier)
+name = "accospro-accounting-marketplace-demo"
+compatibility_date = "2025-08-01"
+main = "src/index.ts"
+
+# Static Assets: serve Vite build (frontend/dist) + API from same Worker
+# Docs: https://developers.cloudflare.com/workers/static-assets/
+[assets]
+directory = "./frontend/dist"
+not_found_handling = "single-page-application"
+
+# D1 — free: 5GB storage, 5M rows read/day, 100k write/day
+[[d1_databases]]
+binding = "DB"
+database_name = "accospro-marketplace-demo-db"
+# TODO: replace after `wrangler d1 create accospro-marketplace-demo-db`
+database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# R2 — free: 10GB storage, no egress fee (uploads: slips/docs)
+[[r2_buckets]]
+binding = "DOCS"
+bucket_name = "accospro-marketplace-docs"
+
+[observability]
+enabled = true

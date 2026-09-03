@@ -1,0 +1,38 @@
+{
+  "name": "accospro-accounting-marketplace-demo",
+  "version": "0.1.0",
+  "description": "AccOS Pro Accounting Marketplace (TH) — SME<>Firm (A) + Firm<>Talent (B) demo on Cloudflare free tier",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --config frontend/vite.config.ts",
+    "dev:worker": "wrangler dev",
+    "build": "vite build --config frontend/vite.config.ts",
+    "build:worker": "echo 'worker uses src/index.ts (no build step)'",
+    "preview": "vite preview --config frontend/vite.config.ts",
+    "deploy": "npm run build && wrangler deploy",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 execute accospro-marketplace-demo-db --local --file=./migrations/0001_init.sql",
+    "db:migrate:remote": "wrangler d1 execute accospro-marketplace-demo-db --remote --file=./migrations/0001_init.sql",
+    "db:seed:local": "wrangler d1 execute accospro-marketplace-demo-db --local --file=./seed.sql",
+    "db:seed:remote": "wrangler d1 execute accospro-marketplace-demo-db --remote --file=./seed.sql",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.44.2",
+    "hono": "^4.7.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.2"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260831.1",
+    "@tailwindcss/vite": "^4.1.11",
+    "@vitejs/plugin-react": "^4.6.0",
+    "drizzle-kit": "^0.31.4",
+    "tailwindcss": "^4.1.11",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "wrangler": "^4.26.0"
+  }
+}

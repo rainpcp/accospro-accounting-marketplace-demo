@@ -120,7 +120,7 @@ function Shell() {
   const { pathname } = useLocation();
   const isHome = pathname === "/";
   // inner pages with their own dark hero render full-bleed (containers inside the page)
-  const fullBleed = isHome || ["/jobboard", "/find-firm", "/find-talent"].includes(pathname);
+  const fullBleed = isHome || ["/jobboard", "/find-firm", "/find-talent", "/post-job"].includes(pathname);
   return (
     <div className="min-h-screen bg-light pb-20 text-ink md:pb-0">
       <header className={isHome

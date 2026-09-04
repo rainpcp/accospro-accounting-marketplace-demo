@@ -16,7 +16,9 @@ jobs:
       - run: bunx tsc --noEmit
       - run: bun run build
       # ข้าม deploy ถ้ายังไม่ใส่ secrets (กัน failed spam) — ใส่เมื่อพร้อมใน Settings → Secrets
+      # เปิด auto-deploy: ใส่ secrets CLOUDFLARE_API_TOKEN/ACCOUNT_ID แล้วตั้ง repo Variable DEPLOY_ENABLED=true
       - name: Deploy Worker + Assets
+        if: ${{ vars.DEPLOY_ENABLED == 'true' }}
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

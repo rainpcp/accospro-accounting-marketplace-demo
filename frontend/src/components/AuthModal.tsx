@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth, type AuthMode } from "../lib/auth";
 import { Field, PasswordField, inputCls } from "./ui";
+import GoogleButton from "./GoogleButton";
 
 /* ---------- shared form (modal + fallback pages) ---------- */
 export function AuthForm({ mode, onMode }: {
@@ -86,6 +87,7 @@ export function AuthForm({ mode, onMode }: {
           <span className="underline">ข้อกำหนดการใช้งาน</span>และ
           <span className="underline">นโยบายความเป็นส่วนตัว</span>ของ AccOS Pro Marketplace
         </p>
+        <GoogleButton role={mode === "register" ? role : "sme"} />
       </div>
     </div>
   );

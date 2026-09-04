@@ -1,8 +1,12 @@
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { AuthForm } from "../components/AuthModal";
+import { useAuth } from "../lib/auth";
 
 export default function Register() {
   const nav = useNavigate();
+  const { user, loading } = useAuth();
+  // login อยู่แล้ว → กลับ dashboard (ไม่โชว์ฟอร์มซ้ำ)
+  if (!loading && user) return <Navigate to="/dashboard" replace />;
   return (
     <div className="mx-auto max-w-md space-y-4">
       <div>

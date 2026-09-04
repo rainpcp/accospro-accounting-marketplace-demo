@@ -16,24 +16,33 @@ export default function FindTalent() {
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
 
-  const load = async () => {
+  const doFetch = async (fq: string, fprov: string, fskill: string) => {
     setLoading(true);
     const p = new URLSearchParams();
-    if (q) p.set("q", q);
-    if (province) p.set("province", province);
-    if (skill) p.set("skill", skill);
+    if (fq) p.set("q", fq);
+    if (fprov) p.set("province", fprov);
+    if (fskill) p.set("skill", fskill);
     try {
       const r: any = await fetch(`/api/talents?${p.toString()}`).then((x) => x.json());
       setData(r.data || []);
-      if (!q && !province && !skill) setTotal((r.data || []).length);
+      if (!fq && !fprov && !fskill) setTotal((r.data || []).length);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { load(); }, []);
+  const load = () => doFetch(q, province, skill);
+
+  // chip ทักษะ / select จังหวัด → ค้นหาใหม่ทันที (ไม่ต้องกดปุ่มค้นหาซ้ำ)
+  // ตั้งใจไม่ใส่ q ใน deps: ช่องพิมพ์ใช้ Enter/ปุ่มค้นหาเพื่อไม่ให้ยิงทุก keystroke
+  useEffect(() => { doFetch(q, province, skill); }, [province, skill]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const hasFilter = q || province || skill;
-  const clear = () => { setQ(""); setProvince(""); setSkill(""); setTimeout(load, 0); };
+  // ล้างแล้วค้นใหม่ด้วยค่าว่างตรง ๆ (ไม่เรียก load ที่ closure ค่าเก่า)
+  const clear = () => {
+    setQ(""); setProvince(""); setSkill("");
+    doFetch("", "", "");
+  };
 
   return (
     <div className="pb-12">

@@ -15,7 +15,23 @@ export const FIRM_CATEGORIES = [
   "กระทบยอด",
   "BOI",
   "ตรวจสอบ",
+  "วางระบบบัญชี",
 ] as const;
+
+// Buyer-language (หน้า Home) → ค่าจริงที่ใช้กรอง firms
+// แก้บั๊ก: เดิม Home ตัดแค่คำว่า "รายเดือน" ทำให้ "ตรวจสอบบัญชี" ค้นไม่เจอ
+// และ "วางระบบบัญชี" ไม่มีใน FIRM_CATEGORIES เลย
+export const HOME_TO_FIRM_CATEGORY: Record<string, string> = {
+  "ปิดงบรายเดือน": "ปิดงบ",
+  "ยื่นภาษี": "ยื่นภาษี",
+  "เงินเดือน": "เงินเดือน",
+  "กระทบยอด": "กระทบยอด",
+  "ตรวจสอบบัญชี": "ตรวจสอบ",
+  "วางระบบบัญชี": "วางระบบบัญชี",
+};
+
+export const toFirmCategory = (homeLabel: string): string =>
+  HOME_TO_FIRM_CATEGORY[homeLabel] ?? homeLabel;
 
 export const TALENT_SKILLS = [
   "กระทบยอด",

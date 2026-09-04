@@ -29,10 +29,10 @@ function PickCard({ job, jobType }: { job: Job; jobType: "sme" | "firm" }) {
         <Chip>{job.category}</Chip>
         <Chip tone="brand">{baht(job.budget)}</Chip>
       </div>
-      <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
-        <span className="text-sm text-slate-500">เสนอแล้ว {job.proposals ?? 0} ข้อเสนอ</span>
+      <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
+        <span className="min-w-0 truncate text-sm text-slate-500">เสนอแล้ว {job.proposals ?? 0} ข้อเสนอ</span>
         <Link to={`/jobs/${jobType}/${job.id}`}
-          className="rounded-full bg-primary-600 px-6 py-2 text-sm font-semibold text-white shadow-cta hover:bg-primary-700">
+          className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-primary-600 px-4 py-1.5 text-[13px] font-semibold text-white shadow-cta transition-all hover:bg-primary-700 active:scale-[.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 sm:px-6 sm:py-2 sm:text-sm">
           ยื่นข้อเสนอ
         </Link>
       </div>

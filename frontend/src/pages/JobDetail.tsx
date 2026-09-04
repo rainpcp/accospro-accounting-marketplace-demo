@@ -19,26 +19,52 @@ export default function JobDetail() {
   const [form, setForm] = useState({ name: "", price: "", message: "" });
   const [msg, setMsg] = useState("");
   const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   const load = async () => {
+    // reset สถานะงานก่อนหน้า — กัน "ส่งข้อเสนอแล้ว"/"ไม่พบงานนี้" ค้างเมื่อเปิดงานที่สองต่อกัน
     setLoading(true);
-    const r: any = await fetch(`/api/jobs/${type}/${id}`).then((x) => x.json());
-    if (r.data) setJob(r.data);
-    else setNotFound(true);
-    setLoading(false);
+    setNotFound(false);
+    setJob(null);
+    setMsg("");
+    setSent(false);
+    setBusy(false);
+    try {
+      const r: any = await fetch(`/api/jobs/${type}/${id}`).then((x) => x.json());
+      if (r.data) setJob(r.data);
+      else setNotFound(true);
+    } catch {
+      setNotFound(true);
+    } finally {
+      setLoading(false);
+    }
   };
-  useEffect(() => { load(); }, [type, id]);
+  useEffect(() => {
+    // เปลี่ยนงาน → ล้างฟอร์มด้วย เหลือแค่ชื่อไว้ให้ (กันราคางานเก่าติดมา)
+    setForm((f) => ({ name: f.name, price: "", message: "" }));
+    load();
+  }, [type, id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const submit = async () => {
+    if (busy) return;
     setMsg("");
+    const priceNum = Number(form.price);
     if (!form.name.trim() || !form.price) { setMsg("กรอกชื่อ + ราคาที่เสนอ"); return; }
-    const r: any = await fetch("/api/proposals", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ jobType: type, jobId: id, providerName: form.name.trim(), price: Number(form.price), message: form.message }),
-    }).then((x) => x.json());
-    if (r.ok) { setSent(true); load(); }
-    else setMsg(r.error || "ส่งข้อเสนอไม่สำเร็จ");
+    if (!Number.isFinite(priceNum) || priceNum <= 0) { setMsg("กรอกราคาที่เสนอมากกว่า 0 บาท"); return; }
+    setBusy(true);
+    try {
+      const r: any = await fetch("/api/proposals", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ jobType: type, jobId: id, providerName: form.name.trim(), price: priceNum, message: form.message }),
+      }).then((x) => x.json());
+      if (r.ok) { setSent(true); load(); }
+      else setMsg(r.error || "ส่งข้อเสนอไม่สำเร็จ");
+    } catch {
+      setMsg("ส่งข้อเสนอไม่สำเร็จ ลองอีกครั้ง");
+    } finally {
+      setBusy(false);
+    }
   };
 
   if (loading) return <p className="text-sm text-slate-500">กำลังโหลดงาน…</p>;
@@ -105,13 +131,13 @@ export default function JobDetail() {
                   <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} placeholder="เช่น สำนักงานบัญชี…" />
                 </Field>
                 <Field label="ราคาเสนอ (บาท)">
-                  <input type="number" min={0} value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className={inputCls} placeholder="เช่น 5000" />
+                  <input type="number" min={1} value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className={inputCls} placeholder="เช่น 5000" />
                 </Field>
                 <Field label="ข้อความถึงผู้จ้าง">
                   <textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} rows={3} className={inputCls} placeholder="ประสบการณ์ + เริ่มงานได้เมื่อไหร่" />
                 </Field>
-                <button onClick={submit} className="w-full rounded-full bg-primary-600 shadow-cta px-4 py-3 font-semibold text-white hover:bg-primary-700">
-                  ยื่นข้อเสนอ
+                <button onClick={submit} disabled={busy} className="w-full rounded-full bg-primary-600 shadow-cta px-4 py-3 font-semibold text-white hover:bg-primary-700 disabled:opacity-60">
+                  {busy ? "กำลังส่ง…" : "ยื่นข้อเสนอ"}
                 </button>
                 {msg && <p className="text-sm text-rose-600" role="alert">{msg}</p>}
               </div>

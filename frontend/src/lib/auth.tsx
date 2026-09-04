@@ -9,7 +9,7 @@ type AuthCtx = {
   loading: boolean;
   refresh: () => Promise<void>;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
-  register: (input: { name: string; email: string; password: string; role: string }) => Promise<{ ok: boolean; error?: string }>;
+  register: (input: { name: string; email: string; password: string; role: string }) => Promise<{ ok: boolean; error?: string; mock?: boolean }>;
   logout: () => Promise<void>;
   modal: AuthMode | null;
   openAuth: (mode: AuthMode) => void;
@@ -42,8 +42,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ email, password }),
     }).then((x) => x.json());
-    if (r.ok) setUser(r.user);
-    return r.ok ? { ok: true } : { ok: false, error: r.error || "login ไม่สำเร็จ" };
+    if (r.ok && r.user) setUser(r.user);
+    return r.ok && r.user ? { ok: true } : { ok: false, error: r.error || "login ไม่สำเร็จ" };
   };
 
   const register = async (input: { name: string; email: string; password: string; role: string }) => {
@@ -52,8 +52,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       headers: { "content-type": "application/json" },
       body: JSON.stringify(input),
     }).then((x) => x.json());
-    if (r.ok) setUser(r.user);
-    return r.ok ? { ok: true } : { ok: false, error: r.error || "สมัครไม่สำเร็จ" };
+    // กันเคส mock เก่าที่ตอบ ok แต่ไม่มี user (setUser(undefined) แล้วพาไป /dashboard ทั้งที่ไม่ได้ login)
+    if (r.ok && r.user) {
+      setUser(r.user);
+      return { ok: true, mock: r.mock };
+    }
+    return { ok: false, error: r.error || "สมัครไม่สำเร็จ" };
   };
 
   const logout = async () => {

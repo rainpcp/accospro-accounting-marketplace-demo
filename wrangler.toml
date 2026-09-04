@@ -8,6 +8,8 @@ main = "src/index.ts"
 [assets]
 directory = "./frontend/dist"
 not_found_handling = "single-page-application"
+# ให้ /api/* เข้า Worker ก่อนเสมอ (กัน asset layer แย่ง/แคชผิด)
+run_worker_first = ["/api/*"]
 
 # D1 — free: 5GB storage, 5M rows read/day, 100k write/day
 [[d1_databases]]
@@ -22,3 +24,8 @@ bucket_name = "accospro-marketplace-docs"
 
 [observability]
 enabled = true
+
+# Google OAuth client id (public) — ใส่ค่าจริงแล้ว deploy ใหม่เพื่อเปิดปุ่ม Google
+# ขอได้ที่ Google Cloud Console → APIs & Services → Credentials → OAuth client (Web)
+[vars]
+GOOGLE_CLIENT_ID = ""

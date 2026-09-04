@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { JOB_CATEGORIES } from "../lib/data";
+import { JOB_CATEGORIES, toFirmCategory } from "../lib/data";
 
 /* ---------- floating card: stats (points) ---------- */
 function StatsCard() {
@@ -166,7 +166,7 @@ export default function Home() {
         <h2 className="text-xl font-bold text-ink">หาตามงานที่ต้องการ</h2>
         <div className="chip-row mt-3 flex gap-2 overflow-x-auto pb-1">
           {JOB_CATEGORIES.map((c) => (
-            <Link key={c} to={`/find-firm?category=${encodeURIComponent(c.replace("รายเดือน", ""))}`}
+            <Link key={c} to={`/find-firm?category=${encodeURIComponent(toFirmCategory(c))}`}
               className="shrink-0 rounded-full border bg-white px-4 py-2 text-sm font-medium hover:border-primary-300 hover:bg-primary-50">
               {c}
             </Link>

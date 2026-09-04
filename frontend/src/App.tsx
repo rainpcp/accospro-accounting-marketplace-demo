@@ -101,6 +101,7 @@ function MobileMenu({ dark }: { dark: boolean }) {
 }
 
 function BottomNav() {
+  const { user, openAuth } = useAuth();
   const item = "flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px]";
   const active = ({ isActive }: { isActive: boolean }) => `${item} ${isActive ? "text-primary-600" : "text-slate-500"}`;
   return (
@@ -110,9 +111,33 @@ function BottomNav() {
         <NavLink to="/jobboard" className={active}><span className="text-lg" aria-hidden>▦</span>งาน</NavLink>
         <NavLink to="/post-job" className={active}><span className="text-lg" aria-hidden>+</span>โพสต์งาน</NavLink>
         <NavLink to="/find-firm" className={active}><span className="text-lg" aria-hidden>🏢</span>หา firm</NavLink>
-        <NavLink to="/dashboard" className={active}><span className="text-lg" aria-hidden>▤</span>งานฉัน</NavLink>
+        {user ? (
+          <NavLink to="/dashboard" className={active}><span className="text-lg" aria-hidden>▤</span>งานฉัน</NavLink>
+        ) : (
+          <button onClick={() => openAuth("login")} className={`${item} text-slate-500`}>
+            <span className="text-lg" aria-hidden>▤</span>งานฉัน
+          </button>
+        )}
       </div>
     </nav>
+  );
+}
+
+function NotFound() {
+  return (
+    <div className="mx-auto max-w-md rounded-card border bg-white p-8 text-center">
+      <p className="text-5xl" aria-hidden>🧭</p>
+      <h1 className="mt-3 text-2xl font-bold">ไม่พบหน้านี้</h1>
+      <p className="mt-1 text-sm text-slate-500">ลิงก์อาจผิดหรือหน้านี้ถูกย้ายไปแล้ว</p>
+      <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+        <Link to="/" className="rounded-full bg-primary-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-700">
+          กลับหน้าแรก
+        </Link>
+        <Link to="/jobboard" className="rounded-full border px-6 py-2.5 text-sm font-semibold hover:bg-slate-50">
+          ดู Jobboard
+        </Link>
+      </div>
+    </div>
   );
 }
 
@@ -147,6 +172,7 @@ function Shell() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
 

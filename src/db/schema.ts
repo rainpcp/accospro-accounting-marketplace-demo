@@ -8,6 +8,7 @@ export const users = sqliteTable("users", {
   email: text("email").notNull(),
   phone: text("phone"),
   passwordHash: text("password_hash"),
+  googleSub: text("google_sub"),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 

@@ -11,33 +11,47 @@ type Firm = {
 
 export default function FindFirm() {
   const [params] = useSearchParams();
+  const paramCategory = params.get("category") || "";
   const [q, setQ] = useState("");
   const [province, setProvince] = useState("");
-  const [category, setCategory] = useState(params.get("category") || "");
+  const [category, setCategory] = useState(paramCategory);
   const [minRating, setMinRating] = useState(0);
   const [data, setData] = useState<Firm[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
 
-  const load = async () => {
+  const doFetch = async (fq: string, fprov: string, fcat: string, frate: number) => {
     setLoading(true);
     const p = new URLSearchParams();
-    if (q) p.set("q", q);
-    if (province) p.set("province", province);
-    if (category) p.set("category", category);
-    if (minRating) p.set("minRating", String(minRating));
+    if (fq) p.set("q", fq);
+    if (fprov) p.set("province", fprov);
+    if (fcat) p.set("category", fcat);
+    if (frate) p.set("minRating", String(frate));
     try {
       const r: any = await fetch(`/api/firms?${p.toString()}`).then((x) => x.json());
       setData(r.data || []);
-      if (!q && !province && !category && !minRating) setTotal((r.data || []).length);
+      if (!fq && !fprov && !fcat && !frate) setTotal((r.data || []).length);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { load(); }, []);
+  // ค้นหาด้วย filters ปัจจุบัน (ปุ่มค้นหา / Enter ในช่อง q)
+  const load = () => doFetch(q, province, category, minRating);
+
+  // sync ?category= จากหน้า Home — reuse component ต้องตาม param ที่เปลี่ยน (ไม่ใช่แค่ครั้งแรก)
+  useEffect(() => { setCategory(paramCategory); }, [paramCategory]);
+
+  // chip หมวด / select จังหวัด-คะแนน → ค้นหาใหม่ทันที (ไม่ต้องกดปุ่มค้นหาซ้ำ)
+  // ตั้งใจไม่ใส่ q ใน deps: ช่องพิมพ์ใช้ Enter/ปุ่มค้นหาเพื่อไม่ให้ยิงทุก keystroke
+  useEffect(() => { doFetch(q, province, category, minRating); }, [province, category, minRating]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const hasFilter = q || province || category || minRating > 0;
-  const clear = () => { setQ(""); setProvince(""); setCategory(""); setMinRating(0); setTimeout(load, 0); };
+  // ล้างแล้วค้นใหม่ด้วยค่าว่างตรง ๆ (ไม่เรียก load ที่ closure ค่าเก่า)
+  const clear = () => {
+    setQ(""); setProvince(""); setCategory(""); setMinRating(0);
+    doFetch("", "", "", 0);
+  };
 
   return (
     <div className="pb-12">

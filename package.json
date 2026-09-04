@@ -12,8 +12,8 @@
     "preview": "vite preview --config frontend/vite.config.ts",
     "deploy": "npm run build && wrangler deploy",
     "db:generate": "drizzle-kit generate",
-    "db:migrate:local": "wrangler d1 execute accospro-marketplace-demo-db --local --file=./migrations/0001_init.sql",
-    "db:migrate:remote": "wrangler d1 execute accospro-marketplace-demo-db --remote --file=./migrations/0001_init.sql",
+    "db:migrate:local": "for f in migrations/000*.sql; do wrangler d1 execute accospro-marketplace-demo-db --local --file=\"$f\"; done",
+    "db:migrate:remote": "for f in migrations/000*.sql; do wrangler d1 execute accospro-marketplace-demo-db --remote --file=\"$f\"; done",
     "db:seed:local": "wrangler d1 execute accospro-marketplace-demo-db --local --file=./seed.sql",
     "db:seed:remote": "wrangler d1 execute accospro-marketplace-demo-db --remote --file=./seed.sql",
     "typecheck": "tsc --noEmit"
@@ -21,6 +21,7 @@
   "dependencies": {
     "drizzle-orm": "^0.44.2",
     "hono": "^4.7.4",
+    "jose": "^6.2.11",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.2"

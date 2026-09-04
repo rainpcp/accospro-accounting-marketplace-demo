@@ -28,4 +28,4 @@ enabled = true
 # Google OAuth client id (public) — ใส่ค่าจริงแล้ว deploy ใหม่เพื่อเปิดปุ่ม Google
 # ขอได้ที่ Google Cloud Console → APIs & Services → Credentials → OAuth client (Web)
 [vars]
-GOOGLE_CLIENT_ID = ""
+GOOGLE_CLIENT_ID = "206854028262-2fsirb2kqrd3m231a8httkp2qgblfvpq.apps.googleusercontent.com"

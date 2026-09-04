@@ -63,7 +63,7 @@ export default function Dashboard() {
         <EmptyState
           title="ยังไม่มีงานในระบบ"
           hint="เริ่มโพสต์งานแรกฟรี — ใช้เวลาไม่ถึงนาที"
-          action={<Link to="/post-job" className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">โพสต์งานแรก</Link>}
+          action={<Link to="/post-job" className="rounded-full bg-primary-600 shadow-cta px-4 py-2 text-sm font-semibold text-white">โพสต์งานแรก</Link>}
         />
       ) : (
         <>

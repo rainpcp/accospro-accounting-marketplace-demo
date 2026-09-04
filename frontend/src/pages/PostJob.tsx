@@ -27,7 +27,7 @@ export default function PostJob() {
 
   if (!loading && !user) {
     return (
-      <div className="mx-auto max-w-md rounded-2xl border bg-white p-6 text-center">
+      <div className="mx-auto max-w-md rounded-card border bg-white p-6 text-center">
         <h1 className="text-xl font-bold">โพสต์งานต้องเข้าสู่ระบบก่อน</h1>
         <p className="mt-2 text-sm text-slate-500">สมัครฟรี 30 วินาที เลือกบทบาท SME / สำนักงานบัญชี / ฟรีแลนซ์</p>
         <div className="mt-4 flex justify-center gap-2">
@@ -41,16 +41,16 @@ export default function PostJob() {
   if (doneId) {
     return (
       <div className="mx-auto max-w-md space-y-4">
-        <div className="rounded-2xl border bg-white p-6 text-center">
+        <div className="rounded-card border bg-white p-6 text-center">
           <p className="text-4xl" aria-hidden>✓</p>
           <h1 className="mt-2 text-xl font-bold">โพสต์งานสำเร็จ</h1>
           <p className="mt-1 text-sm text-slate-500">รหัสงาน {doneId} · firm/talent ที่สนใจจะเข้ามาเสนอราคา</p>
         </div>
-        <div className="rounded-2xl border bg-white p-5">
+        <div className="rounded-card border bg-white p-5">
           <h2 className="font-bold">แนบรูปประกอบงาน <span className="font-normal text-slate-500">(เช่น ตัวอย่างบิล/หน้าร้าน — งานมีรูปได้ข้อเสนอเร็วกว่า)</span></h2>
           <div className="mt-3"><ImageUpload jobType={kind} jobId={doneId} /></div>
           <div className="mt-4 flex justify-center gap-2">
-            <Link to="/dashboard" className="rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white">ดูงานของฉัน</Link>
+            <Link to="/dashboard" className="rounded-xl bg-primary-600 px-4 py-2 font-semibold text-white shadow-cta hover:bg-primary-700">ดูงานของฉัน</Link>
             <button onClick={() => { setDoneId(""); setForm({ ...form, title: "", detail: "" }); }} className="rounded-xl border px-4 py-2 font-semibold">โพสต์อีกงาน</button>
           </div>
         </div>
@@ -70,11 +70,11 @@ export default function PostJob() {
           A · SME หา firm
         </button>
         <button onClick={() => setKind("firm")} aria-pressed={kind === "firm"}
-          className={`flex-1 rounded-xl px-4 py-2.5 font-semibold ${kind === "firm" ? "bg-slate-900 text-white" : "border bg-white"}`}>
+          className={`flex-1 rounded-xl px-4 py-2.5 font-semibold ${kind === "firm" ? "bg-primary-600 text-white shadow-cta" : "border bg-white"}`}>
           B · Firm หา talent
         </button>
       </div>
-      <div className="space-y-4 rounded-2xl border bg-white p-5">
+      <div className="space-y-4 rounded-card border bg-white p-5">
         <Field label="หัวข้องาน">
           <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
             placeholder="เช่น ปิดงบรายเดือนร้านอาหาร 2 สาขา" className={inputCls} />

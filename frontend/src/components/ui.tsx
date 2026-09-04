@@ -1,5 +1,42 @@
 import { useState, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { baht } from "../lib/data";
+
+/* ---------- AirLume inner-page dark hero ---------- */
+export function PageHero({ badge, title, sub, children }: {
+  badge: string; title: ReactNode; sub?: string; children?: ReactNode;
+}) {
+  return (
+    <section className="hero-dark hero-bg relative overflow-hidden">
+      <div className="hero-pillars absolute inset-0" aria-hidden />
+      <div className="relative mx-auto max-w-6xl px-4 pb-24 pt-12 text-center sm:pt-14">
+        <span className="inline-block rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-medium text-white/90">
+          {badge}
+        </span>
+        <h1 className="mx-auto mt-3 max-w-3xl text-3xl font-extrabold tracking-tight text-white sm:text-5xl">
+          {title}
+        </h1>
+        {sub && <p className="mx-auto mt-2 max-w-[620px] text-sm text-white/70">{sub}</p>}
+        {children}
+      </div>
+    </section>
+  );
+}
+
+/* ---------- AirLume CTA pill link (primary action, arrow affordance) ---------- */
+export function CtaLink({ to, children, ghost = false }: { to: string; children: ReactNode; ghost?: boolean }) {
+  if (ghost)
+    return (
+      <Link to={to} className="inline-flex h-12 items-center gap-2 rounded-full border border-white/25 px-6 text-sm font-semibold text-white hover:bg-white/10">
+        {children} <span aria-hidden>→</span>
+      </Link>
+    );
+  return (
+    <Link to={to} className="cta-airlume">
+      {children} <span className="cta-arrow" aria-hidden>→</span>
+    </Link>
+  );
+}
 
 /* ---------- trust: rating + count (เหนือ fold เสมอ) ---------- */
 export function Rating({ value, count, dark = false }: { value: number; count: number; dark?: boolean }) {

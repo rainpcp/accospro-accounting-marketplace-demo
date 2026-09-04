@@ -43,7 +43,7 @@ export default function Register() {
             <option value="talent">ฟรีแลนซ์ — รับงานจาก firm</option>
           </select>
         </Field>
-        <button onClick={submit} className="w-full rounded-xl bg-slate-900 px-4 py-3 font-semibold text-white hover:bg-slate-700">
+        <button onClick={submit} className="w-full rounded-full bg-primary-600 shadow-cta px-4 py-3 font-semibold text-white hover:bg-primary-700">
           สมัครเลย
         </button>
         <p className="text-center text-sm text-slate-500">มีบัญชีแล้ว? <Link to="/login" className="font-semibold text-primary-600">เข้าสู่ระบบ</Link></p>

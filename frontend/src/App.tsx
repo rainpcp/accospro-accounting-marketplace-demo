@@ -106,6 +106,8 @@ function BottomNav() {
 function Shell() {
   const { pathname } = useLocation();
   const isHome = pathname === "/";
+  // inner pages with their own dark hero render full-bleed (containers inside the page)
+  const fullBleed = isHome || ["/jobboard", "/find-firm", "/find-talent"].includes(pathname);
   return (
     <div className="min-h-screen bg-light pb-20 text-ink md:pb-0">
       <header className={isHome
@@ -121,7 +123,7 @@ function Shell() {
         </div>
       </header>
 
-      <main className={isHome ? undefined : "mx-auto max-w-6xl px-4 py-6"}>
+      <main className={fullBleed ? undefined : "mx-auto max-w-6xl px-4 py-6"}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/jobboard" element={<Jobboard />} />

@@ -44,10 +44,10 @@ export default function JobDetail() {
   if (loading) return <p className="text-sm text-slate-500">กำลังโหลดงาน…</p>;
   if (notFound || !job)
     return (
-      <div className="mx-auto max-w-md rounded-2xl border bg-white p-6 text-center">
+      <div className="mx-auto max-w-md rounded-card border bg-white p-6 text-center">
         <h1 className="text-xl font-bold">ไม่พบงานนี้</h1>
         <p className="mt-1 text-sm text-slate-500">งานอาจถูกปิดไปแล้ว ลองดูงานอื่นใน Jobboard</p>
-        <Link to="/jobboard" className="mt-4 inline-block rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white">← กลับ Jobboard</Link>
+        <Link to="/jobboard" className="mt-4 inline-block rounded-full bg-primary-600 shadow-cta px-4 py-2 font-semibold text-white">← กลับ Jobboard</Link>
       </div>
     );
 
@@ -56,7 +56,7 @@ export default function JobDetail() {
       <Link to="/jobboard" className="text-sm text-slate-500 hover:text-primary-600">← กลับ Jobboard</Link>
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
-          <div className="rounded-2xl border bg-white p-5 sm:p-6">
+          <div className="rounded-card border bg-white p-5 sm:p-6">
             <div className="flex flex-wrap items-center gap-2">
               <StatusChip status={job.status} />
               <Chip>{job.category}</Chip>
@@ -80,7 +80,7 @@ export default function JobDetail() {
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-2xl border bg-white p-5 lg:sticky lg:top-20">
+          <div className="rounded-card border bg-white p-5 lg:sticky lg:top-20">
             <p className="text-sm text-slate-500">งบประมาณ</p>
             <p className="text-3xl font-bold text-primary-700">{baht(job.budget)}</p>
             <div className="mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
@@ -89,7 +89,7 @@ export default function JobDetail() {
             </div>
           </div>
 
-          <div className="rounded-2xl border bg-white p-5">
+          <div className="rounded-card border bg-white p-5">
             <h2 className="font-bold">ยื่นข้อเสนอ ({job.proposals})</h2>
             {!user ? (
               <p className="mt-2 text-sm text-slate-500">
@@ -110,7 +110,7 @@ export default function JobDetail() {
                 <Field label="ข้อความถึงผู้จ้าง">
                   <textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} rows={3} className={inputCls} placeholder="ประสบการณ์ + เริ่มงานได้เมื่อไหร่" />
                 </Field>
-                <button onClick={submit} className="w-full rounded-xl bg-slate-900 px-4 py-3 font-semibold text-white hover:bg-slate-700">
+                <button onClick={submit} className="w-full rounded-full bg-primary-600 shadow-cta px-4 py-3 font-semibold text-white hover:bg-primary-700">
                   ยื่นข้อเสนอ
                 </button>
                 {msg && <p className="text-sm text-rose-600" role="alert">{msg}</p>}

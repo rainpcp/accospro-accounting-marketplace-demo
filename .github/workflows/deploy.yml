@@ -1,25 +1,11 @@
-name: CI + Deploy to Cloudflare (free tier)
+name: ping
 
 on:
   push:
     branches: [main]
 
 jobs:
-  build-and-deploy:
+  ping:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - run: bun install
-      - run: bunx tsc --noEmit
-      - run: bun run build
-      # ข้าม deploy ถ้ายังไม่ใส่ secrets (กัน failed spam) — ใส่เมื่อพร้อมใน Settings → Secrets
-      - name: Deploy Worker + Assets
-        if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy
+      - run: echo hello

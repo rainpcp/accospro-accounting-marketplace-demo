@@ -105,6 +105,12 @@ h1, h2, h3 {
   color: #3347ff;
   font-weight: 700;
 }
+/* large variant for modal / hero-close CTAs */
+.cta-lg {
+  height: 56px;
+  font-size: 16px;
+  padding-left: 28px;
+}
 
 /* ---------- AirLume glass deal card ---------- */
 .glass-dark {
@@ -148,6 +154,25 @@ h1, h2, h3 {
   background-size: 800px 100%;
   animation: shimmer 1.4s infinite linear;
   border-radius: 0.75rem;
+}
+
+/* ---------- modal entrance motion ---------- */
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.modal-in {
+  animation: modal-in 0.22s ease-out;
+}
+.overlay-in {
+  animation: overlay-in 0.18s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .modal-in, .overlay-in { animation: none; }
 }
 
 /* Thin scrollbars for chip rows */

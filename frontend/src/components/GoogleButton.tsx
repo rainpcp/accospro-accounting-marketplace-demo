@@ -99,13 +99,15 @@ export default function GoogleButton({ role }: { role: string }) {
       window.google.accounts.id.prompt((moment: any) => {
         if (moment.isNotDisplayed() || moment.isSkippedMoment()) {
           setWaiting(false);
-          const reason = moment.getNotDisplayedReason?.() || moment.getSkippedReason?.() || "";
-          if (String(reason).includes("browser")) {
-            setError("เบราว์เซอร์บล็อกหน้าต่าง Google — เปิด third-party cookies แล้วลองใหม่");
-          } else if (moment.isSkippedMoment()) {
+          const reason = String(moment.getNotDisplayedReason?.() || moment.getSkippedReason?.() || "");
+          // config ผิดจริง (แก้ที่ console) vs เบราว์เซอร์บล็อก (แก้ที่คนใช้)
+          if (/invalid_client|missing_client|unregistered_origin/i.test(reason)) {
+            setError("ตั้งค่า Google Client ผิด — แจ้งแอดมิน");
+          } else if (moment.isSkippedMoment() && !/user_cancel|tap_outside/i.test(reason)) {
             setError("ปิดหน้าต่าง Google แล้ว — กดปุ่มอีกครั้งเพื่อลองใหม่");
           } else {
-            setError("เปิดหน้าต่าง Google ไม่ได้ — ลองใหม่อีกครั้ง");
+            // FedCM โดนบล็อก/cooldown หลังเคยกดปิด — เปิด third-party sign-in ใหม่
+            setError("Chrome บล็อก Third-party sign-in — กดไอคอนซ้ายของช่อง URL → เปิด Third-party sign-in แล้วรีเฟรชหน้า");
           }
         }
         // ถ้าแสดงสำเร็จ รอ callback (user เลือกบัญชี) — ค้าง waiting ไว้

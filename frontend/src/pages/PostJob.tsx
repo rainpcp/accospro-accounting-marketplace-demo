@@ -6,7 +6,7 @@ import { Field, inputCls } from "../components/ui";
 import ImageUpload from "../components/ImageUpload";
 
 export default function PostJob() {
-  const { user, loading } = useAuth();
+  const { user, loading, openAuth } = useAuth();
   const [kind, setKind] = useState<"sme" | "firm">("sme");
   const [form, setForm] = useState({ title: "", category: "ปิดงบ", budget: 5000, province: "กรุงเทพมหานคร", detail: "" });
   const [msg, setMsg] = useState("");
@@ -31,8 +31,8 @@ export default function PostJob() {
         <h1 className="text-xl font-bold">โพสต์งานต้องเข้าสู่ระบบก่อน</h1>
         <p className="mt-2 text-sm text-slate-500">สมัครฟรี 30 วินาที เลือกบทบาท SME / สำนักงานบัญชี / ฟรีแลนซ์</p>
         <div className="mt-4 flex justify-center gap-2">
-          <Link to="/login" className="rounded-xl bg-primary-600 px-4 py-2 font-semibold text-white">เข้าสู่ระบบ</Link>
-          <Link to="/register" className="rounded-xl border px-4 py-2 font-semibold">สมัครฟรี</Link>
+          <button onClick={() => openAuth("login")} className="rounded-full bg-primary-600 px-5 py-2 font-semibold text-white shadow-cta hover:bg-primary-700">เข้าสู่ระบบ</button>
+          <button onClick={() => openAuth("register")} className="rounded-full border px-5 py-2 font-semibold">สมัครฟรี</button>
         </div>
       </div>
     );

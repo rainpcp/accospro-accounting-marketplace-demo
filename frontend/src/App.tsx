@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { AuthProvider, useAuth } from "./lib/auth";
+import { AuthModal } from "./components/AuthModal";
 
 const linkCls = ({ isActive }: { isActive: boolean }) =>
   `rounded-full px-3 py-2 ${isActive ? "bg-white/15 text-white" : "text-white/70 hover:bg-white/10 hover:text-white"}`;
@@ -17,7 +18,7 @@ const linkClsLight = ({ isActive }: { isActive: boolean }) =>
   `rounded-full px-3 py-2 ${isActive ? "bg-primary-50 text-primary-600" : "text-slate-600 hover:bg-slate-100"}`;
 
 function DesktopNav({ dark }: { dark: boolean }) {
-  const { user, logout } = useAuth();
+  const { user, logout, openAuth } = useAuth();
   const nav = useNavigate();
   const cls = dark ? linkCls : linkClsLight;
   return (
@@ -40,11 +41,12 @@ function DesktopNav({ dark }: { dark: boolean }) {
         </>
       ) : (
         <>
-          <NavLink to="/login" className={cls}>เข้าสู่ระบบ</NavLink>
-          <NavLink to="/register"
+          <button onClick={() => openAuth("login")}
+            className={`rounded-full px-3 py-2 ${dark ? "text-white/70 hover:bg-white/10 hover:text-white" : "text-slate-600 hover:bg-slate-100"}`}>เข้าสู่ระบบ</button>
+          <button onClick={() => openAuth("register")}
             className={dark
               ? "rounded-full bg-white px-4 py-2 font-semibold text-navy-950 hover:bg-white/90"
-              : "rounded-full bg-primary-50 px-4 py-2 font-semibold text-primary-600"}>สมัครฟรี</NavLink>
+              : "rounded-full bg-primary-50 px-4 py-2 font-semibold text-primary-600"}>สมัครฟรี</button>
         </>
       )}
     </nav>
@@ -53,9 +55,10 @@ function DesktopNav({ dark }: { dark: boolean }) {
 
 function MobileMenu({ dark }: { dark: boolean }) {
   const [open, setOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, openAuth } = useAuth();
   const nav = useNavigate();
   const go = (to: string) => () => { setOpen(false); nav(to); };
+  const auth = (m: "login" | "register") => () => { setOpen(false); openAuth(m); };
   return (
     <div className="ml-auto md:hidden">
       <button onClick={() => setOpen(!open)} aria-expanded={open} aria-label="เมนู"
@@ -69,12 +72,22 @@ function MobileMenu({ dark }: { dark: boolean }) {
             ["/find-firm", "A · หาสำนักงานบัญชี"],
             ["/find-talent", "B · หาทีมช่วยงาน"],
             ["/post-job", "โพสต์งานฟรี"],
-            ...(user ? [["/dashboard", "งานของฉัน"] as const] : [["/login", "เข้าสู่ระบบ"] as const, ["/register", "สมัครฟรี"] as const]),
+            ...(user ? [["/dashboard", "งานของฉัน"] as const] : []),
           ].map(([to, label]) => (
             <button key={to} onClick={go(to)} className="block w-full rounded-xl px-4 py-3 text-left font-medium hover:bg-slate-100">
               {label}
             </button>
           ))}
+          {!user && (
+            <>
+              <button onClick={auth("login")} className="block w-full rounded-xl px-4 py-3 text-left font-medium hover:bg-slate-100">
+                เข้าสู่ระบบ
+              </button>
+              <button onClick={auth("register")} className="block w-full rounded-xl bg-primary-50 px-4 py-3 text-left font-semibold text-primary-600">
+                สมัครฟรี
+              </button>
+            </>
+          )}
           {user && (
             <button onClick={async () => { await logout(); setOpen(false); nav("/"); }}
               className="block w-full rounded-xl px-4 py-3 text-left text-slate-500 hover:bg-slate-100">
@@ -164,6 +177,7 @@ function Shell() {
       </footer>
 
       <BottomNav />
+      <AuthModal />
     </div>
   );
 }

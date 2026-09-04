@@ -12,7 +12,7 @@ type Detail = {
 
 export default function JobDetail() {
   const { type, id } = useParams();
-  const { user } = useAuth();
+  const { user, openAuth } = useAuth();
   const [job, setJob] = useState<Detail | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -93,7 +93,7 @@ export default function JobDetail() {
             <h2 className="font-bold">ยื่นข้อเสนอ ({job.proposals})</h2>
             {!user ? (
               <p className="mt-2 text-sm text-slate-500">
-                <Link to="/login" className="font-semibold text-primary-600">เข้าสู่ระบบ</Link> ก่อนยื่นข้อเสนอ
+                <button onClick={() => openAuth("login")} className="font-semibold text-primary-600">เข้าสู่ระบบ</button> ก่อนยื่นข้อเสนอ
               </p>
             ) : sent ? (
               <p className="mt-2 rounded-xl bg-emerald-50 px-4 py-2.5 text-sm text-emerald-700 ring-1 ring-emerald-200" role="status">

@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 
 export type User = { id: string; role: string; name: string; email: string };
 
+export type AuthMode = "login" | "register";
+
 type AuthCtx = {
   user: User | null;
   loading: boolean;
@@ -9,13 +11,17 @@ type AuthCtx = {
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   register: (input: { name: string; email: string; password: string; role: string }) => Promise<{ ok: boolean; error?: string }>;
   logout: () => Promise<void>;
+  modal: AuthMode | null;
+  openAuth: (mode: AuthMode) => void;
+  closeAuth: () => void;
 };
 
-const Ctx = createContext<AuthCtx>({ user: null, loading: true, refresh: async () => {}, login: async () => ({ ok: false }), register: async () => ({ ok: false }), logout: async () => {} });
+const Ctx = createContext<AuthCtx>({ user: null, loading: true, refresh: async () => {}, login: async () => ({ ok: false }), register: async () => ({ ok: false }), logout: async () => {}, modal: null, openAuth: () => {}, closeAuth: () => {} });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [modal, setModal] = useState<AuthMode | null>(null);
 
   const refresh = async () => {
     try {
@@ -55,7 +61,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
-  return <Ctx.Provider value={{ user, loading, refresh, login, register, logout }}>{children}</Ctx.Provider>;
+  const openAuth = (mode: AuthMode) => setModal(mode);
+  const closeAuth = () => setModal(null);
+
+  return <Ctx.Provider value={{ user, loading, refresh, login, register, logout, modal, openAuth, closeAuth }}>{children}</Ctx.Provider>;
 }
 
 export const useAuth = () => useContext(Ctx);

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, Route, Routes, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import Home from "./pages/Home";
 import FindFirm from "./pages/FindFirm";
 import FindTalent from "./pages/FindTalent";
@@ -143,6 +143,12 @@ function NotFound() {
 
 function Shell() {
   const { pathname } = useLocation();
+  const [params, setParams] = useSearchParams();
+  const googleError = params.get("google_error");
+  const dismissGoogleError = () => {
+    params.delete("google_error");
+    setParams(params, { replace: true });
+  };
   const isHome = pathname === "/";
   // inner pages with their own dark hero render full-bleed (containers inside the page)
   const fullBleed = isHome || ["/jobboard", "/find-firm", "/find-talent", "/post-job"].includes(pathname);
@@ -162,6 +168,14 @@ function Shell() {
       </header>
 
       <main className={fullBleed ? undefined : "mx-auto max-w-6xl px-4 py-6"}>
+        {googleError && (
+          <div className="mx-auto max-w-6xl px-4 pt-4" role="alert">
+            <p className="rounded-xl bg-rose-50 px-4 py-2.5 text-sm text-rose-700 ring-1 ring-rose-200">
+              {googleError}{" "}
+              <button onClick={dismissGoogleError} className="ml-2 font-semibold underline">ปิด</button>
+            </p>
+          </div>
+        )}
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/jobboard" element={<Jobboard />} />

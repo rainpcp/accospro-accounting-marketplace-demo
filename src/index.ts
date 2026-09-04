@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { getCookie, setCookie, deleteCookie } from "hono/cookie";
 import { createRemoteJWKSet, jwtVerify } from "jose";
 
 type Env = {
@@ -7,6 +8,7 @@ type Env = {
   DOCS?: R2Bucket;
   ASSETS?: Fetcher;
   GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
 };
 
 const app = new Hono<{ Bindings: Env }>();
@@ -209,8 +211,102 @@ app.post("/api/jobs-sme", async (c) => {  const body = await c.req.json().catch(
     ).bind(id, me.id, body.title, body.category, budget, body.province || "กรุงเทพมหานคร", body.detail || "", now).run();
     return c.json({ ok: true, id });
   } catch (e: any) {
-    if (e?.message === "no-d1") return c.json({ ok: true, id: `job-sme-${Date.now()}`, mock: true });
+    if (e?.message === "no-d1") return c.json({ error: "ยังไม่ต่อ D1" }, 503);
     throw e;
+  }
+});
+
+// หา/สร้าง user จาก Google profile แล้วออก session cookie — ใช้ร่วมทั้ง popup และ redirect flow
+async function finishGoogleLogin(c: any, sub: string, email: string, name: string, role: string) {
+  if (!c.env.DB) throw new Error("no-d1");
+  let u: any = await c.env.DB.prepare("SELECT * FROM users WHERE google_sub = ?").bind(sub).first();
+  if (!u) {
+    const byEmail: any = await c.env.DB.prepare("SELECT * FROM users WHERE email = ?").bind(email).first();
+    if (byEmail) {
+      await c.env.DB.prepare("UPDATE users SET google_sub = ? WHERE id = ?").bind(sub, byEmail.id).run();
+      u = byEmail;
+    } else {
+      const id = `u-${Date.now().toString(36)}${Math.floor(Math.random() * 1e4)}`;
+      await c.env.DB.prepare(
+        "INSERT INTO users (id, role, name, email, google_sub) VALUES (?,?,?,?,?)"
+      ).bind(id, role, name || email.split("@")[0], email, sub).run();
+      u = { id, role, name: name || email.split("@")[0], email };
+    }
+  }
+  const token = hex(crypto.getRandomValues(new Uint8Array(32)));
+  await c.env.DB.prepare("INSERT INTO sessions (token, user_id, expires_at) VALUES (?,?,?)")
+    .bind(token, u.id, Date.now() + SESSION_DAYS * 86400 * 1000).run();
+  c.header("Set-Cookie", sessionCookie(c, token, SESSION_DAYS * 86400));
+  return { id: u.id, role: u.role, name: u.name, email: u.email };
+}
+
+// ---------- Google OAuth redirect flow (เต็มหน้าแบบ Fastwork, ไม่พึ่ง FedCM) ----------
+// ขั้น 1: frontend ขอ URL → ตั้ง state cookie กัน CSRF → redirect ไป accounts.google.com
+app.get("/api/auth/google/url", (c) => {
+  const clientId = c.env.GOOGLE_CLIENT_ID;
+  if (!clientId) return c.json({ error: "ยังไม่ตั้งค่า Google login" }, 503);
+  const role = ["sme", "firm", "talent"].includes(c.req.query("role") || "") ? c.req.query("role") : "sme";
+  let next = c.req.query("next") || "/dashboard";
+  if (!next.startsWith("/")) next = "/dashboard";
+  const url = new URL(c.req.url);
+  const redirectUri = `${url.origin}/api/auth/google/callback`;
+  const nonce = hex(crypto.getRandomValues(new Uint8Array(16)));
+  const state = btoa(JSON.stringify({ nonce, role, next })).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const secure = url.protocol === "https:";
+  setCookie(c, "g_state", nonce, { httpOnly: true, sameSite: "Lax", path: "/", maxAge: 600, secure });
+  const auth = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+  auth.searchParams.set("client_id", clientId);
+  auth.searchParams.set("redirect_uri", redirectUri);
+  auth.searchParams.set("response_type", "code");
+  auth.searchParams.set("scope", "openid email profile");
+  auth.searchParams.set("state", state);
+  auth.searchParams.set("prompt", "select_account");
+  return c.json({ url: auth.toString() });
+});
+
+// ขั้น 2: Google redirect กลับ → แลก code เป็น token → login → กลับเข้าเว็บ
+app.get("/api/auth/google/callback", async (c) => {
+  const clientId = c.env.GOOGLE_CLIENT_ID;
+  const clientSecret = c.env.GOOGLE_CLIENT_SECRET;
+  const url = new URL(c.req.url);
+  const fail = (msg: string) => c.redirect(`/?google_error=${encodeURIComponent(msg)}`, 302);
+  if (!clientId || !clientSecret) return fail("ยังไม่ตั้งค่า Google login ฝั่งเซิร์ฟเวอร์");
+  if (c.req.query("error")) return fail("ยกเลิกการเชื่อม Google แล้ว");
+  const code = c.req.query("code") || "";
+  const rawState = c.req.query("state") || "";
+  let st: any = null;
+  try {
+    st = JSON.parse(atob(rawState.replace(/-/g, "+").replace(/_/g, "/")));
+  } catch { /* fallthrough */ }
+  const nonce = getCookie(c, "g_state");
+  if (!code || !st?.nonce || !nonce || st.nonce !== nonce) return fail("session หมดอายุ กดปุ่ม Google ใหม่อีกครั้ง");
+  deleteCookie(c, "g_state", { path: "/" });
+
+  try {
+    const redirectUri = `${url.origin}/api/auth/google/callback`;
+    const tok = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        code, client_id: clientId, client_secret: clientSecret,
+        redirect_uri: redirectUri, grant_type: "authorization_code",
+      }),
+    }).then((x) => x.json() as Promise<any>);
+    if (!tok.id_token) throw new Error("no-id-token");
+    const { payload } = await jwtVerify(tok.id_token, GOOGLE_JWKS, {
+      issuer: ["https://accounts.google.com", "accounts.google.com"],
+      audience: clientId,
+    });
+    const sub = String(payload.sub || "");
+    const email = String(payload.email || "").toLowerCase();
+    const name = String(payload.name || "");
+    if (!sub || !EMAIL_RE.test(email)) throw new Error("bad-claims");
+    const role = ["sme", "firm", "talent"].includes(st.role) ? st.role : "sme";
+    await finishGoogleLogin(c, sub, email, name, role);
+    let next = typeof st.next === "string" && st.next.startsWith("/") ? st.next : "/dashboard";
+    return c.redirect(next, 302);
+  } catch {
+    return fail("ยืนยันตัวตน Google ไม่สำเร็จ ลองใหม่อีกครั้ง");
   }
 });
 

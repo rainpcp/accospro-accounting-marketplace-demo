@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,20 +15,9 @@ jobs:
       - run: bun install
       - run: bunx tsc --noEmit
       - run: bun run build
-
-  deploy:
-    needs: build
-    # ข้าม deploy ถ้ายังไม่ใส่ secrets (กัน failed spam) — ใส่เมื่อพร้อมใน Settings → Secrets
-    if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - run: bun install
-      - run: bun run build
+      # ข้าม deploy ถ้ายังไม่ใส่ secrets (กัน failed spam) — ใส่เมื่อพร้อมใน Settings → Secrets
       - name: Deploy Worker + Assets
+        if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

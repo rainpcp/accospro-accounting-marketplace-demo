@@ -103,7 +103,7 @@ export default function GoogleButton({ role }: { role: string }) {
           // config ผิดจริง (แก้ที่ console) vs เบราว์เซอร์บล็อก (แก้ที่คนใช้)
           if (/invalid_client|missing_client|unregistered_origin/i.test(reason)) {
             setError("ตั้งค่า Google Client ผิด — แจ้งแอดมิน");
-          } else if (moment.isSkippedMoment() && !/user_cancel|tap_outside/i.test(reason)) {
+          } else if (/user_cancel|tap_outside|dismiss/i.test(reason)) {
             setError("ปิดหน้าต่าง Google แล้ว — กดปุ่มอีกครั้งเพื่อลองใหม่");
           } else {
             // FedCM โดนบล็อก/cooldown หลังเคยกดปิด — เปิด third-party sign-in ใหม่

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth, type AuthMode } from "../lib/auth";
 import { Field, PasswordField, inputCls } from "./ui";
@@ -15,19 +15,22 @@ export function AuthForm({ mode, onMode, compact = false }: {
   const [role, setRole] = useState("sme");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const emailRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { setError(""); if (compact) emailRef.current?.focus(); }, [mode]);
-  useEffect(() => { if (compact) emailRef.current?.focus(); }, []);
+  useEffect(() => { setError(""); }, [mode]);
+
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const canSubmit = mode === "login"
+    ? emailOk && password.length > 0 && !busy
+    : name.trim().length > 0 && emailOk && password.length >= 8 && !busy;
 
   const submit = async () => {
+    if (!canSubmit) return;
     setError("");
-    if (mode === "register" && password.length < 8) { setError("รหัสผ่านต้อง ≥ 8 ตัว"); return; }
     setBusy(true);
     try {
       const r = mode === "login"
-        ? await login(email, password)
-        : await register({ name, email, password, role });
+        ? await login(email.trim(), password)
+        : await register({ name: name.trim(), email: email.trim(), password, role });
       if (r.ok) nav("/dashboard");
       else setError(r.error || "ไม่สำเร็จ ลองอีกครั้ง");
     } finally {
@@ -56,10 +59,10 @@ export function AuthForm({ mode, onMode, compact = false }: {
           </Field>
         )}
         <Field label="อีเมล">
-          <input ref={emailRef} value={email} onChange={(e) => setEmail(e.target.value)} type="email"
+          <input value={email} onChange={(e) => setEmail(e.target.value)} type="email"
             autoComplete="email" placeholder="name@company.co.th" className={inputCls} />
         </Field>
-        <Field label="รหัสผ่าน">
+        <Field label={mode === "register" ? "รหัสผ่าน (อย่างน้อย 8 ตัว)" : "รหัสผ่าน"}>
           <PasswordField value={password} onChange={setPassword} onEnter={submit} />
         </Field>
         {mode === "register" && (
@@ -71,21 +74,68 @@ export function AuthForm({ mode, onMode, compact = false }: {
             </select>
           </Field>
         )}
-        <button onClick={submit} disabled={busy}
-          className="cta-airlume w-full justify-center disabled:opacity-60">
-          {busy ? "กำลังดำเนินการ…" : mode === "login" ? "เข้าสู่ระบบ" : "สมัครเลย"} <span className="cta-arrow" aria-hidden>→</span>
+        <button onClick={submit} disabled={!canSubmit}
+          className={canSubmit
+            ? "cta-airlume w-full justify-center"
+            : "flex h-12 w-full cursor-not-allowed items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-400"}>
+          {busy ? "กำลังดำเนินการ…" : mode === "login" ? "เข้าสู่ระบบ" : "สมัครเลย"}
+          {canSubmit && <span className="cta-arrow" aria-hidden>→</span>}
         </button>
-        <p className="text-center text-xs text-slate-400">
-          {mode === "login" ? "ยังไม่มีบัญชี? กดแท็บสมัครฟรีด้านบน" : "สมัครฟรี 30 วินาที ไม่ต้องใช้บัตรเครดิต"}
+        <p className="text-center text-xs leading-relaxed text-slate-400">
+          เมื่อดำเนินการต่อ แสดงว่าคุณยอมรับ
+          <span className="underline">ข้อกำหนดการใช้งาน</span>และ
+          <span className="underline">นโยบายความเป็นส่วนตัว</span>ของ AccOS Pro Marketplace
         </p>
       </div>
     </div>
   );
 }
 
-/* ---------- popup modal (AirLume) ---------- */
+/* ---------- right visual panel (AirLume, แทน mascot) ---------- */
+function VisualPanel() {
+  const R = 22;
+  const C = 2 * Math.PI * R;
+  return (
+    <div className="hero-dark hero-bg relative hidden flex-col justify-between overflow-hidden p-7 text-white md:flex">
+      <div className="hero-pillars absolute inset-0" aria-hidden />
+      <div className="relative">
+        <span className="inline-block rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-medium text-white/90">
+          ✦ AccOS Pro Marketplace
+        </span>
+        <p className="mt-4 text-2xl font-extrabold leading-snug">
+          จ้างบัญชีง่าย<br />
+          <span className="text-primary-300">งานเข้าระบบทันที</span>
+        </p>
+      </div>
+      <div className="relative space-y-3">
+        <div className="flex items-center gap-3 rounded-card bg-white p-4 text-ink shadow-card">
+          <svg width="56" height="56" viewBox="0 0 72 72" role="img" aria-label="แมตช์งานบัญชี 94%">
+            <circle cx="36" cy="36" r={R} fill="none" stroke="#E8EBFF" strokeWidth="8" />
+            <circle cx="36" cy="36" r={R} fill="none" stroke="#3347FF" strokeWidth="8" strokeLinecap="round"
+              strokeDasharray={`${C * 0.94} ${C}`} transform="rotate(-90 36 36)" />
+            <text x="36" y="41" textAnchor="middle" fontSize="14" fontWeight="800" fill="#12163A">94%</text>
+          </svg>
+          <div>
+            <p className="text-sm font-bold">แมตช์ตรงจังหวัด + งบ</p>
+            <p className="text-xs text-slate-500">สแกน 20+ สำนักงานบัญชี</p>
+          </div>
+        </div>
+        <div className="glass-dark flex items-center gap-3 rounded-card p-4">
+          <div className="flex" aria-hidden>
+            {["ส", "บ", "ช"].map((t, i) => (
+              <span key={i} className="-ml-1 grid h-7 w-7 place-items-center rounded-full bg-white/20 text-[11px] font-bold ring-2 ring-white/40 first:ml-0">{t}</span>
+            ))}
+          </div>
+          <p className="text-xs text-white/85"><b>90% SME พึงพอใจ</b><br />จากงานที่จ้างสำเร็จ</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- popup modal (split Fastwork-style, AirLume skin) ---------- */
 export function AuthModal() {
-  const { modal, closeAuth } = useAuth();
+  const { modal, closeAuth, user } = useAuth();
   const [mode, setMode] = useState<AuthMode>("login");
 
   useEffect(() => { if (modal) setMode(modal); }, [modal]);
@@ -101,8 +151,6 @@ export function AuthModal() {
     };
   }, [modal, closeAuth]);
 
-  // close modal automatically once logged in (form navigates to dashboard)
-  const { user } = useAuth();
   useEffect(() => { if (user && modal) closeAuth(); }, [user, modal, closeAuth]);
 
   if (!modal) return null;
@@ -110,29 +158,27 @@ export function AuthModal() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-navy-950/70 p-4 backdrop-blur-sm"
       onClick={closeAuth} role="presentation">
-      <div className="w-full max-w-md overflow-hidden rounded-card-lg bg-white shadow-card"
+      <div className="relative grid w-full max-w-3xl overflow-hidden rounded-card-lg bg-white shadow-card md:grid-cols-2"
         role="dialog" aria-modal="true" aria-label={mode === "login" ? "เข้าสู่ระบบ" : "สมัครใช้งานฟรี"}
         onClick={(e) => e.stopPropagation()}>
-        {/* navy head */}
-        <div className="hero-dark hero-bg relative px-6 pb-5 pt-6">
-          <button onClick={closeAuth} aria-label="ปิด"
-            className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full border border-white/25 text-white hover:bg-white/10">
-            ✕
-          </button>
-          <span className="inline-block rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-medium text-white/90">
-            ✦ AccOS Pro Marketplace
-          </span>
-          <h2 className="mt-2 text-2xl font-extrabold text-white">
-            {mode === "login" ? "ยินดีต้อนรับกลับ" : "เริ่มใช้งานฟรี"}
+        <button onClick={closeAuth} aria-label="ปิด"
+          className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/80 text-lg text-ink shadow hover:bg-white">
+          ✕
+        </button>
+        {/* form side */}
+        <div className="p-6 sm:p-8">
+          <h2 className="text-center text-2xl font-extrabold text-ink">
+            {mode === "login" ? "ยินดีต้อนรับกลับ" : "เริ่มจ้างบัญชีง่ายๆ"}
           </h2>
-          <p className="mt-1 text-sm text-white/70">
-            {mode === "login" ? "เข้าสู่ระบบเพื่อจัดการงานและข้อเสนอ" : "หาคนบัญชี verified ได้ใน 1 นาที"}
+          <p className="mt-1 text-center text-sm text-slate-500">
+            {mode === "login" ? "จัดการงานและข้อเสนอของคุณ" : "สมัครฟรี 30 วินาที ไม่ต้องใช้บัตร"}
           </p>
+          <div className="mt-5">
+            <AuthForm mode={mode} onMode={setMode} />
+          </div>
         </div>
-        {/* form body */}
-        <div className="p-6">
-          <AuthForm mode={mode} onMode={setMode} compact />
-        </div>
+        {/* visual side */}
+        <VisualPanel />
       </div>
     </div>
   );

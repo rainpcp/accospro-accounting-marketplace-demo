@@ -58,8 +58,12 @@ export default function JobDetail() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ jobType: type, jobId: id, providerName: form.name.trim(), price: priceNum, message: form.message }),
       }).then((x) => x.json());
-      if (r.ok) { setSent(true); load(); }
-      else setMsg(r.error || "ส่งข้อเสนอไม่สำเร็จ");
+    if (r.ok) {
+      // สำเร็จ: โชว์กล่องเขียวค้าง + บวกตัวนับ (ไม่เรียก load() เพราะมันรีเซ็ต sent กลับเป็นฟอร์ม)
+      setSent(true);
+      setJob((j) => (j ? { ...j, proposals: j.proposals + 1 } : j));
+    }
+    else setMsg(r.error || "ส่งข้อเสนอไม่สำเร็จ");
     } catch {
       setMsg("ส่งข้อเสนอไม่สำเร็จ ลองอีกครั้ง");
     } finally {

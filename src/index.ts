@@ -340,16 +340,18 @@ app.post("/api/proposals", async (c) => {
   if (!Number.isFinite(price) || price <= 0) return c.json({ error: "กรอกราคาที่เสนอมากกว่า 0 บาท" }, 400);
   try {
     if (!c.env.DB) throw new Error("no-d1");
+    // ต้อง login ก่อน — กันสแปมข้อเสนอโดยไม่ต้องมีบัญชี (UI บังคับ login อยู่แล้ว)
+    const me = await getSessionUser(c).catch(() => null);
+    if (!me) return c.json({ error: "กรุณาเข้าสู่ระบบก่อนยื่นข้อเสนอ" }, 401);
     // งานต้องมีจริง — กัน jobId มั่วแล้ว proposal นับไม่ขึ้น
     const table = jobType === "sme" ? "jobs_sme" : "jobs_firm";
     const job: any = await c.env.DB.prepare(`SELECT id FROM ${table} WHERE id = ?`).bind(body.jobId).first();
     if (!job) return c.json({ error: "ไม่พบงานนี้" }, 404);
-    const me = await getSessionUser(c).catch(() => null);
     const id = `prop-${Date.now()}`;
     const now = Date.now();
     await c.env.DB.prepare(
       "INSERT INTO proposals (id, job_type, job_id, provider_id, provider_name, price, message, status, created_at) VALUES (?,?,?,?,?,?,?, 'pending', ?)"
-    ).bind(id, jobType, body.jobId, me?.id || String(body.providerId || "demo"), String(body.providerName), price, String(body.message || ""), now).run();
+    ).bind(id, jobType, body.jobId, me.id, String(body.providerName), price, String(body.message || ""), now).run();
     return c.json({ ok: true, id });
   } catch (e: any) {
     if (e?.message === "no-d1") return c.json({ ok: true, id: `prop-${Date.now()}`, mock: true });

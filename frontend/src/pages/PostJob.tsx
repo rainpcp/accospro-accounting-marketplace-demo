@@ -35,19 +35,21 @@ export default function PostJob() {
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
   const [doneId, setDoneId] = useState("");
+  const [mocked, setMocked] = useState(false);
 
   const submit = async () => {
     if (!form.title.trim()) { setMsg("กรอกหัวข้องานก่อน เช่น ปิดงบรายเดือนร้านอาหาร"); return; }
     setMsg("");
     setBusy(true);
     setDoneId("");
+    setMocked(false);
     try {
       const r: any = await fetch(kind === "sme" ? "/api/jobs-sme" : "/api/jobs-firm", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(form),
       }).then((x) => x.json());
-      if (r.ok) setDoneId(r.id);
+      if (r.ok) { setDoneId(r.id); if (r.mock) setMocked(true); }
       else setMsg(`ผิดพลาด: ${r.error}`);
     } finally {
       setBusy(false);
@@ -91,6 +93,11 @@ export default function PostJob() {
               <p className="mx-auto mt-5 grid h-14 w-14 place-items-center rounded-full bg-emerald-50 text-3xl" aria-hidden>✓</p>
               <h2 className="mt-3 text-xl font-extrabold text-ink">โพสต์งานสำเร็จ</h2>
               <p className="mt-1 text-sm text-slate-500">รหัสงาน {doneId} · firm/talent ที่สนใจจะเข้ามาเสนอราคา</p>
+              {mocked && (
+                <p className="mx-auto mt-3 max-w-sm rounded-xl bg-amber-50 px-4 py-2.5 text-sm text-amber-800 ring-1 ring-amber-200" role="status">
+                  โหมด mock (ยังไม่ต่อ D1) — งานนี้จะไม่บันทึกถาวร
+                </p>
+              )}
               <div className="mt-5 rounded-card bg-slate-50 p-4 text-left">
                 <h3 className="font-bold text-ink">แนบรูปประกอบงาน</h3>
                 <p className="text-sm text-slate-500">เช่น ตัวอย่างบิล หน้าร้าน — งานมีรูปได้ข้อเสนอเร็วกว่า</p>
@@ -121,7 +128,7 @@ export default function PostJob() {
                   <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
                     placeholder="เช่น ปิดงบรายเดือนร้านอาหาร 2 สาขา" className={`${inputCls} py-3`} />
                 </Field>
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className={`grid gap-4 ${kind === "sme" ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
                   <Field label="หมวดงาน">
                     <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className={`${inputCls} py-3`}>
                       {FIRM_CATEGORIES.map((c) => <option key={c}>{c}</option>)}
@@ -130,11 +137,13 @@ export default function PostJob() {
                   <Field label="งบ (บาท/เดือน)">
                     <input type="number" min={0} value={form.budget} onChange={(e) => setForm({ ...form, budget: Number(e.target.value) })} className={`${inputCls} py-3`} />
                   </Field>
-                  <Field label="จังหวัด">
-                    <select value={form.province} onChange={(e) => setForm({ ...form, province: e.target.value })} className={`${inputCls} py-3`}>
-                      {PROVINCES.map((p) => <option key={p}>{p}</option>)}
-                    </select>
-                  </Field>
+                  {kind === "sme" && (
+                    <Field label="จังหวัด">
+                      <select value={form.province} onChange={(e) => setForm({ ...form, province: e.target.value })} className={`${inputCls} py-3`}>
+                        {PROVINCES.map((p) => <option key={p}>{p}</option>)}
+                      </select>
+                    </Field>
+                  )}
                 </div>
                 <Field label="รายละเอียดงาน">
                   <textarea value={form.detail} onChange={(e) => setForm({ ...form, detail: e.target.value })} rows={4}

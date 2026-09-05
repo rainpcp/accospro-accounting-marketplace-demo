@@ -64,7 +64,8 @@ export function AuthForm({ mode, onMode }: {
             autoComplete="email" placeholder="name@company.co.th" className={`${inputCls} py-3`} />
         </Field>
         <Field label={mode === "register" ? "รหัสผ่าน (อย่างน้อย 8 ตัว)" : "รหัสผ่าน"}>
-          <PasswordField value={password} onChange={setPassword} onEnter={submit} />
+          <PasswordField value={password} onChange={setPassword} onEnter={submit}
+            autoComplete={mode === "register" ? "new-password" : "current-password"} />
         </Field>
         {mode === "register" && (
           <Field label="สมัครในบทบาท">

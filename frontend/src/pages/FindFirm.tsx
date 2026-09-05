@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { FIRM_CATEGORIES, PROVINCES } from "../lib/data";
 import { AccosBadge, Chip, CtaLink, EmptyState, PageHero, PriceRange, Rating, SkeletonCard, VerifiedBadge } from "../components/ui";
@@ -20,7 +20,9 @@ export default function FindFirm() {
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
 
+  const reqId = useRef(0);
   const doFetch = async (fq: string, fprov: string, fcat: string, frate: number) => {
+    const my = ++reqId.current;
     setLoading(true);
     const p = new URLSearchParams();
     if (fq) p.set("q", fq);
@@ -29,6 +31,7 @@ export default function FindFirm() {
     if (frate) p.set("minRating", String(frate));
     try {
       const r: any = await fetch(`/api/firms?${p.toString()}`).then((x) => x.json());
+      if (reqId.current !== my) return; // กัน response เก่าทับผลใหม่ตอนกดฟิลเตอร์รัว
       setData(r.data || []);
       if (!fq && !fprov && !fcat && !frate) setTotal((r.data || []).length);
     } finally {

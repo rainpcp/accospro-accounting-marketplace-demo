@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { PROVINCES, TALENT_SKILLS, baht } from "../lib/data";
 import { Chip, CtaLink, EmptyState, PageHero, Rating, SkeletonCard } from "../components/ui";
@@ -16,7 +16,9 @@ export default function FindTalent() {
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
 
+  const reqId = useRef(0);
   const doFetch = async (fq: string, fprov: string, fskill: string) => {
+    const my = ++reqId.current;
     setLoading(true);
     const p = new URLSearchParams();
     if (fq) p.set("q", fq);
@@ -24,6 +26,7 @@ export default function FindTalent() {
     if (fskill) p.set("skill", fskill);
     try {
       const r: any = await fetch(`/api/talents?${p.toString()}`).then((x) => x.json());
+      if (reqId.current !== my) return; // กัน response เก่าทับผลใหม่ตอนกดฟิลเตอร์รัว
       setData(r.data || []);
       if (!fq && !fprov && !fskill) setTotal((r.data || []).length);
     } finally {

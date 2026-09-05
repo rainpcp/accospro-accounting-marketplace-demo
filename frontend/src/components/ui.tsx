@@ -40,9 +40,11 @@ export function CtaLink({ to, children, ghost = false }: { to: string; children:
 
 /* ---------- trust: rating + count (เหนือ fold เสมอ) ---------- */
 export function Rating({ value, count, dark = false }: { value: number; count: number; dark?: boolean }) {
+  const v = Number(value);
+  const safe = Number.isFinite(v) ? v : 0;
   return (
-    <span className={`inline-flex items-center gap-1 text-sm font-semibold ${dark ? "text-amber-300" : "text-amber-600"}`} aria-label={`คะแนน ${value} จาก ${count} รีวิว`}>
-      <span aria-hidden>★</span> {value.toFixed(1)}
+    <span className={`inline-flex items-center gap-1 text-sm font-semibold ${dark ? "text-amber-300" : "text-amber-600"}`} aria-label={`คะแนน ${safe} จาก ${count} รีวิว`}>
+      <span aria-hidden>★</span> {safe.toFixed(1)}
       <span className={`font-normal ${dark ? "text-white/70" : "text-slate-500"}`}>({count})</span>
     </span>
   );
@@ -123,8 +125,8 @@ export const inputCls =
   "w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-[16px] placeholder:text-slate-400 hover:border-slate-400";
 
 /* ---------- password with show/hide ---------- */
-export function PasswordField({ value, onChange, onEnter, placeholder = "รหัสผ่าน ≥ 8 ตัว" }: {
-  value: string; onChange: (v: string) => void; onEnter?: () => void; placeholder?: string;
+export function PasswordField({ value, onChange, onEnter, placeholder = "รหัสผ่าน ≥ 8 ตัว", autoComplete = "current-password" }: {
+  value: string; onChange: (v: string) => void; onEnter?: () => void; placeholder?: string; autoComplete?: string;
 }) {
   const [show, setShow] = useState(false);
   return (
@@ -135,7 +137,7 @@ export function PasswordField({ value, onChange, onEnter, placeholder = "รห�
         onKeyDown={(e) => e.key === "Enter" && onEnter?.()}
         type={show ? "text" : "password"}
         placeholder={placeholder}
-        autoComplete="current-password"
+        autoComplete={autoComplete}
         className={`${inputCls} pr-16`}
         aria-label="รหัสผ่าน"
       />

@@ -32,7 +32,7 @@ function PickCard({ job, jobType }: { job: Job; jobType: "sme" | "firm" }) {
       <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
         <span className="min-w-0 truncate text-sm text-slate-500">เสนอแล้ว {job.proposals ?? 0} ข้อเสนอ</span>
         <Link to={`/jobs/${jobType}/${job.id}`}
-          className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-primary-600 px-4 py-1.5 text-[13px] font-semibold text-white shadow-cta transition-all hover:bg-primary-700 active:scale-[.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 sm:px-6 sm:py-2 sm:text-sm">
+          className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-primary-600 px-4 py-2 text-[13px] font-semibold text-white shadow-cta transition-all hover:bg-primary-700 active:scale-[.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 sm:px-6 sm:text-sm">
           ยื่นข้อเสนอ
         </Link>
       </div>
@@ -91,7 +91,7 @@ export default function Jobboard() {
           {loading ? (
             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4"><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>
           ) : (
-            <div className="chip-row flex gap-5 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible xl:grid-cols-4">
+            <div className="chip-row flex snap-x gap-5 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible xl:grid-cols-4">
               {picks.map((j) => <PickCard key={j.t + j.id} job={j} jobType={j.t} />)}
             </div>
           )}
@@ -153,16 +153,17 @@ export default function Jobboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map((j) => (
-                      <tr key={j.id} className="border-b last:border-0 hover:bg-primary-50/50">
-                        <td className="py-3 pr-4">
-                          <Link to={`/jobs/${tab}/${j.id}`} className="flex items-center gap-3 font-medium text-ink hover:text-primary-600">
-                            {j.cover
-                              ? <img src={j.cover} alt="" loading="lazy" className="h-10 w-10 shrink-0 rounded-xl border object-cover" />
-                              : <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary-50 text-primary-400" aria-hidden>🗎</span>}
-                            <span className="line-clamp-1">{j.title}</span>
-                          </Link>
-                        </td>
+                  {rows.map((j) => (
+                    <tr key={j.id} className={`border-b last:border-0 hover:bg-primary-50/50 ${j.status !== "open" ? "opacity-60" : ""}`}>
+                      <td className="py-3 pr-4">
+                        <Link to={`/jobs/${tab}/${j.id}`} className="flex items-center gap-3 font-medium text-ink hover:text-primary-600">
+                          {j.cover
+                            ? <img src={j.cover} alt="" loading="lazy" className="h-10 w-10 shrink-0 rounded-xl border object-cover" />
+                            : <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary-50 text-primary-400" aria-hidden>🗎</span>}
+                          <span className="line-clamp-1">{j.title}</span>
+                          {j.status !== "open" && <StatusChip status={j.status} />}
+                        </Link>
+                      </td>
                         <td className="py-3 pr-4 text-slate-600">{j.category}</td>
                         <td className="py-3 pr-4"><Chip>{tab === "sme" ? "SME จ้าง" : "บริษัทจ้าง"}</Chip></td>
                         <td className="py-3 pr-4 text-base font-extrabold text-primary-600">{baht(j.budget)}</td>
@@ -174,10 +175,10 @@ export default function Jobboard() {
                 </table>
               </div>
               <div className="mt-4 grid gap-3 md:hidden">
-                {rows.map((j) => (
-                  <Link key={j.id} to={`/jobs/${tab}/${j.id}`}
-                    className="rounded-card border border-slate-200/80 bg-white p-4 shadow-soft">
-                    <p className="font-bold text-ink">{j.title}</p>
+              {rows.map((j) => (
+                <Link key={j.id} to={`/jobs/${tab}/${j.id}`}
+                  className={`rounded-card border border-slate-200/80 bg-white p-4 shadow-soft ${j.status !== "open" ? "opacity-60" : ""}`}>
+                  <p className="font-bold text-ink">{j.title} {j.status !== "open" && <StatusChip status={j.status} />}</p>
                     <p className="mt-1 text-sm text-slate-500">
                       {j.category} · <span className="font-extrabold text-primary-600">{baht(j.budget)}</span> · เสนอแล้ว {j.proposals ?? 0} · {fmtDateTime(j.created_at)}
                     </p>

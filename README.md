@@ -53,15 +53,34 @@ Cloudflare Dashboard → Workers → Custom Domains → Add (SSL ฟรีอั
 ## API
 
 - `GET /api/health`
-- `GET /api/firms?q=&province=`
+- `GET /api/firms?q=&province=&category=&minRating=`
 - `GET /api/firms/:id`
-- `GET /api/talents?q=&province=`
-- `GET /api/jobs-sme` / `POST /api/jobs-sme`
-- `GET /api/jobs-firm` / `POST /api/jobs-firm`
+- `GET /api/talents?q=&province=&skill=&minRating=`
+- `GET /api/jobs-sme` / `POST /api/jobs-sme` (ต้อง login)
+- `GET /api/jobs-firm` / `POST /api/jobs-firm` (ต้อง login)
+- `GET /api/jobs/:type/:id` (detail + รูป + จำนวนข้อเสนอ)
 - `POST /api/proposals`
-- `POST /api/upload` (multipart: file + jobType + jobId — ต้องเปิด R2 ก่อน)
+- `POST /api/auth/register|login|logout`, `GET /api/auth/me`
+- `GET /api/auth/google/url`, `GET /api/auth/google/callback` (Google OAuth redirect flow)
+- `POST /api/upload` (multipart: file + jobType + jobId — ต้อง login + เปิด R2)
 - `GET /api/files/<key>` (เสิร์ฟรูปจาก R2, cache 1 วัน)
 - `GET /api/images?jobType=&jobId=` (รูปของงานเดียว)
+
+## Google login (ต้องทำ 1 ครั้ง)
+
+1. Google Cloud Console → สร้างโปรเจกต์ → **APIs & Services → OAuth consent screen** (External, ใส่ test users)
+2. **Clients → Create client → Web application** (`marketplace-web`)
+   - Authorized JavaScript origins: `https://<worker>.workers.dev`
+   - Authorized redirect URIs: `https://<worker>.workers.dev/api/auth/google/callback`
+3. ใส่ Client ID ใน `wrangler.toml` → `[vars] GOOGLE_CLIENT_ID`
+4. เก็บ secret (ไม่ลง repo): `printf '%s' '...' | wrangler secret put GOOGLE_CLIENT_SECRET`
+5. `npm run deploy` — ปุ่ม “ดำเนินการต่อด้วย Google” จะขึ้นใน popup เอง
+
+## CI auto-deploy (เปิดเมื่อพร้อม)
+
+CI (`bun install` + `tsc` + `build`) รันทุก push อยู่แล้ว ส่วนขั้น deploy จะข้ามจนกว่าจะตั้งค่า:
+repo Settings → Secrets → `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`
+→ Variables → `DEPLOY_ENABLED` = `true`
 
 ## โครง repo
 

@@ -483,54 +483,6 @@ app.get("/api/auth/config", (c) =>
 // ---------- Google One-tap / Sign-in: ตรวจ ID token แล้วสร้าง session เดียวกับระบบ ----------
 const GOOGLE_JWKS = createRemoteJWKSet(new URL("https://www.googleapis.com/oauth2/v3/certs"));
 
-app.post("/api/auth/google", async (c) => {
-  const clientId = c.env.GOOGLE_CLIENT_ID;
-  if (!clientId) return c.json({ error: "ยังไม่ตั้งค่า Google login (GOOGLE_CLIENT_ID)" }, 503);
-  const body = await c.req.json().catch(() => ({}));
-  const credential = String(body.credential || "");
-  const role = ["sme", "firm", "talent"].includes(body.role) ? body.role : "sme";
-  if (!credential) return c.json({ error: "ไม่มี Google credential" }, 400);
-  let sub = "", email = "", name = "";
-  try {
-    const { payload } = await jwtVerify(credential, GOOGLE_JWKS, {
-      issuer: ["https://accounts.google.com", "accounts.google.com"],
-      audience: clientId,
-    });
-    sub = String(payload.sub || "");
-    email = String(payload.email || "").toLowerCase();
-    name = String(payload.name || "");
-    if (!sub || !EMAIL_RE.test(email)) throw new Error("bad-claims");
-  } catch {
-    return c.json({ error: "ยืนยันตัวตน Google ไม่สำเร็จ" }, 401);
-  }
-  try {
-    if (!c.env.DB) throw new Error("no-d1");
-    let u: any = await c.env.DB.prepare("SELECT * FROM users WHERE google_sub = ?").bind(sub).first();
-    if (!u) {
-      // มีอีเมลนี้อยู่แล้ว (สมัครด้วยรหัสผ่าน) → ผูก Google เข้าบัญชีเดิม
-      const byEmail: any = await c.env.DB.prepare("SELECT * FROM users WHERE email = ?").bind(email).first();
-      if (byEmail) {
-        await c.env.DB.prepare("UPDATE users SET google_sub = ? WHERE id = ?").bind(sub, byEmail.id).run();
-        u = byEmail;
-      } else {
-        const id = `u-${Date.now().toString(36)}${Math.floor(Math.random() * 1e4)}`;
-        await c.env.DB.prepare(
-          "INSERT INTO users (id, role, name, email, google_sub) VALUES (?,?,?,?,?)"
-        ).bind(id, role, name || email.split("@")[0], email, sub).run();
-        u = { id, role, name: name || email.split("@")[0], email };
-      }
-    }
-    const token = hex(crypto.getRandomValues(new Uint8Array(32)));
-    await c.env.DB.prepare("INSERT INTO sessions (token, user_id, expires_at) VALUES (?,?,?)")
-      .bind(token, u.id, Date.now() + SESSION_DAYS * 86400 * 1000).run();
-    c.header("Set-Cookie", sessionCookie(c, token, SESSION_DAYS * 86400));
-    return c.json({ ok: true, user: { id: u.id, role: u.role, name: u.name, email: u.email } });
-  } catch (e: any) {
-    if (e?.message === "no-d1") return c.json({ error: "ยังไม่ต่อ D1" }, 503);
-    throw e;
-  }
-});
-
 // ---------- รูปแนบงาน: ไฟล์จริงใน Cloudflare R2 (ฟรี 10GB, ไม่มีค่า egress) ----------
 const ALLOW_IMG = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_IMG_BYTES = 5 * 1024 * 1024; // 5MB/รูป
